@@ -39,6 +39,18 @@ export type Funnel = {
   nodes: Node[]
   edges: Edge[]
 }
+export type Subtask = {
+  id: string
+  title: string
+  isCompleted: boolean
+}
+export type Comment = {
+  id: string
+  author: string
+  avatar?: string
+  content: string
+  createdAt: string
+}
 export type Task = {
   id: string
   title: string
@@ -48,6 +60,12 @@ export type Task = {
   priority: 'Baixa' | 'Média' | 'Alta'
   status: 'A Fazer' | 'Em Progresso' | 'Em Revisão' | 'Concluído'
   deadline: string
+  description?: string
+  assignee?: string
+  avatar?: string
+  subtasks?: Subtask[]
+  comments?: Comment[]
+  attachmentCount?: number
 }
 export type Folder = {
   id: string
