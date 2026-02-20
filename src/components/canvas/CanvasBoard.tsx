@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
-import { Funnel, Node, Edge } from '@/types'
+import { Funnel, Node, Edge, NodeData } from '@/types'
 import BlockPalette from './BlockPalette'
 import NodeItem from './NodeItem'
 import RightPanel from './RightPanel'
+import { NodeSettingsModal } from './NodeSettingsModal'
 import { Plus, Minus, Maximize, Map } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +16,7 @@ export default function CanvasBoard({
 }) {
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [notesNodeId, setNotesNodeId] = useState<string | null>(null)
+  const [settingsNodeId, setSettingsNodeId] = useState<string | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
 
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 })
@@ -140,6 +142,28 @@ export default function CanvasBoard({
       edges: funnel.edges.filter((e) => e.source !== id && e.target !== id),
     })
     if (notesNodeId === id) setNotesNodeId(null)
+    if (settingsNodeId === id) setSettingsNodeId(null)
+  }
+
+  const handleSaveSettings = (id: string, updates: Partial<NodeData>) => {
+    onChange({
+      ...funnel,
+      nodes: funnel.nodes.map((n) =>
+        n.id === id ? { ...n, data: { ...n.data, ...updates } } : n,
+      ),
+    })
+    setSettingsNodeId(null)
+  }
+
+  const handleToggleComplete = (id: string) => {
+    onChange({
+      ...funnel,
+      nodes: funnel.nodes.map((n) =>
+        n.id === id
+          ? { ...n, data: { ...n.data, isCompleted: !n.data.isCompleted } }
+          : n,
+      ),
+    })
   }
 
   const handleZoomIn = () =>
@@ -279,6 +303,8 @@ export default function CanvasBoard({
                 onAddChild={() => handleAddChild(n.id)}
                 onDelete={() => handleDeleteNode(n.id)}
                 onOpenNotes={() => setNotesNodeId(n.id)}
+                onOpenSettings={() => setSettingsNodeId(n.id)}
+                onToggleComplete={() => handleToggleComplete(n.id)}
                 scale={transform.scale}
               />
             ))}
@@ -382,6 +408,17 @@ export default function CanvasBoard({
           onClose={() => setNotesNodeId(null)}
         />
       )}
+
+      <NodeSettingsModal
+        node={
+          settingsNodeId
+            ? funnel.nodes.find((n) => n.id === settingsNodeId) || null
+            : null
+        }
+        isOpen={!!settingsNodeId}
+        onClose={() => setSettingsNodeId(null)}
+        onSave={handleSaveSettings}
+      />
     </div>
   )
 }

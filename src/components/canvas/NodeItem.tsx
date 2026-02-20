@@ -14,6 +14,7 @@ import {
   Plus,
   Trash2,
   Globe,
+  Check,
 } from 'lucide-react'
 
 const icons: Record<string, any> = {
@@ -35,6 +36,8 @@ type NodeItemProps = {
   onMove: (x: number, y: number) => void
   scale: number
   onOpenNotes: () => void
+  onOpenSettings: () => void
+  onToggleComplete: () => void
   onDelete: () => void
   onAddChild: () => void
 }
@@ -46,6 +49,8 @@ export default function NodeItem({
   onMove,
   scale,
   onOpenNotes,
+  onOpenSettings,
+  onToggleComplete,
   onDelete,
   onAddChild,
 }: NodeItemProps) {
@@ -85,7 +90,7 @@ export default function NodeItem({
   return (
     <div
       className={cn(
-        'absolute pointer-events-auto w-[280px] bg-white border border-slate-200 rounded-xl shadow-sm p-3 z-10 transition-all flex items-center gap-3 group',
+        'absolute pointer-events-auto w-[280px] bg-white border border-slate-200 rounded-xl shadow-sm p-3 z-10 transition-all flex items-center gap-3 group select-none',
         (selected || isHovered) &&
           'ring-1 ring-primary/30 border-primary/50 shadow-md',
         isDragging && 'cursor-grabbing opacity-95 scale-[1.02]',
@@ -116,6 +121,10 @@ export default function NodeItem({
         )}
       >
         <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenSettings()
+          }}
           className="text-slate-400 hover:text-slate-700 transition-colors bg-white"
           title="Settings"
         >
@@ -132,6 +141,33 @@ export default function NodeItem({
           <FileText size={18} strokeWidth={1.5} />
         </button>
       </div>
+
+      {node.data.isTaskMode && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggleComplete()
+          }}
+          className={cn(
+            'absolute -top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-20 shadow-sm',
+            node.data.isCompleted
+              ? 'border-green-500 bg-green-500 text-white'
+              : 'border-primary/50 bg-white hover:border-primary text-transparent',
+          )}
+          title={
+            node.data.isCompleted ? 'Mark as incomplete' : 'Mark as complete'
+          }
+        >
+          <Check
+            size={14}
+            strokeWidth={3}
+            className={cn(
+              'transition-opacity',
+              node.data.isCompleted ? 'opacity-100' : 'opacity-0',
+            )}
+          />
+        </button>
+      )}
 
       <div
         className={cn(

@@ -10,6 +10,9 @@ export type NodeData = {
   status: string
   notes?: string
   subtitle?: string
+  description?: string
+  isTaskMode?: boolean
+  isCompleted?: boolean
 }
 export type Node = {
   id: string
