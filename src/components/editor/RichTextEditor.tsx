@@ -26,6 +26,108 @@ import useFunnelStore from '@/stores/useFunnelStore'
 import CanvasBoard from '@/components/canvas/CanvasBoard'
 import { cn } from '@/lib/utils'
 
+const getCanvasPreviewInnerHtml = (canvas: Funnel) => {
+  const nodes = canvas.nodes
+  const edges = canvas.edges
+
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity
+  nodes.forEach((n) => {
+    if (n.x < minX) minX = n.x
+    if (n.x + 280 > maxX) maxX = n.x + 280
+    if (n.y < minY) minY = n.y
+    if (n.y + 74 > maxY) maxY = n.y + 74
+  })
+
+  const containerWidth = 600
+  const containerHeight = 240
+
+  if (nodes.length === 0) {
+    minX = 0
+    maxX = containerWidth
+    minY = 0
+    maxY = containerHeight
+  }
+
+  const padding = 24
+  const contentWidth = maxX - minX || containerWidth
+  const contentHeight = maxY - minY || containerHeight
+
+  const scale = Math.min(
+    (containerWidth - padding * 2) / contentWidth,
+    (containerHeight - padding * 2) / contentHeight,
+    1,
+  )
+
+  const xOffset = (containerWidth - contentWidth * scale) / 2 - minX * scale
+  const yOffset = (containerHeight - contentHeight * scale) / 2 - minY * scale
+
+  const nodesHtml = nodes
+    .map((n) => {
+      const left = n.x * scale + xOffset
+      const top = n.y * scale + yOffset
+      const width = 280 * scale
+      const height = 74 * scale
+      return `<div style="position: absolute; left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px; background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: ${8 * scale}px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; padding: ${8 * scale}px; box-sizing: border-box; overflow: hidden; pointer-events: none;">
+      <div style="flex-shrink: 0; width: ${24 * scale}px; height: ${24 * scale}px; background: hsl(var(--muted)); border-radius: ${6 * scale}px; margin-right: ${10 * scale}px; border: 1px solid hsl(var(--border)); display: flex; align-items: center; justify-content: center; color: hsl(var(--muted-foreground));">
+        <svg xmlns="http://www.w3.org/2000/svg" width="${14 * scale}" height="${14 * scale}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/></svg>
+      </div>
+      <div style="min-width: 0; flex: 1;">
+         <div style="font-size: ${12 * scale}px; font-weight: 600; color: hsl(var(--foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">${n.data.name}</div>
+         <div style="font-size: ${10 * scale}px; color: hsl(var(--muted-foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: ${2 * scale}px;">${n.data.subtitle || 'Configure this step'}</div>
+      </div>
+    </div>`
+    })
+    .join('')
+
+  const edgesHtml = edges
+    .map((e) => {
+      const sourceNode = nodes.find((n) => n.id === e.source)
+      const targetNode = nodes.find((n) => n.id === e.target)
+      if (!sourceNode || !targetNode) return ''
+
+      const startX = (sourceNode.x + 280) * scale + xOffset
+      const startY = (sourceNode.y + 37) * scale + yOffset
+      const endX = targetNode.x * scale + xOffset
+      const endY = (targetNode.y + 37) * scale + yOffset
+
+      const d = `M ${startX} ${startY} C ${startX + 30 * scale} ${startY}, ${endX - 30 * scale} ${endY}, ${endX} ${endY}`
+
+      return `<path d="${d}" stroke="hsl(var(--border))" stroke-width="${2 * scale}" fill="none" pointer-events="none" />`
+    })
+    .join('')
+
+  const isEmpty = nodes.length === 0
+  const emptyStateHtml = isEmpty
+    ? `
+    <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: hsl(var(--muted-foreground)); pointer-events: none;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 8px; opacity: 0.5;"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 17V7h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/></svg>
+      <span style="font-size: 13px; font-weight: 500;">Canvas vazio</span>
+    </div>
+  `
+    : ''
+
+  return `
+    <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: hsl(var(--foreground)); font-family: inherit; line-height: 1; pointer-events: none;">${canvas.name}</h4>
+    <div class="border border-border bg-muted/20 rounded-xl overflow-hidden shadow-sm cursor-pointer transition-all hover:border-primary/40 hover:shadow-md ring-offset-background hover:ring-1 hover:ring-primary/20" style="width: 100%; max-width: 600px; height: ${containerHeight}px; position: relative;">
+      <div style="position: absolute; inset: 0; background-image: radial-gradient(hsl(var(--border)) 1px, transparent 0); background-size: 16px 16px; opacity: 0.4; pointer-events: none;"></div>
+      ${emptyStateHtml}
+      <svg style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;">
+        ${edgesHtml}
+      </svg>
+      ${nodesHtml}
+      <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: hsl(var(--background) / 0.6); backdrop-filter: blur(2px); opacity: 0; transition: all 0.2s ease-in-out; pointer-events: none;" class="group-hover:opacity-100">
+         <div style="background: hsl(var(--card)); padding: 8px 16px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); font-size: 13px; font-weight: 600; color: hsl(var(--primary)); display: flex; align-items: center; gap: 6px; transform: translateY(4px); transition: transform 0.2s ease-in-out; border: 1px solid hsl(var(--border));" class="group-hover:translate-y-0">
+           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+           Editar Canvas
+         </div>
+      </div>
+    </div>
+  `
+}
+
 export default function RichTextEditor({
   doc,
   onChange,
@@ -47,6 +149,30 @@ export default function RichTextEditor({
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== doc.content) {
       editorRef.current.innerHTML = doc.content
+
+      let hasChanges = false
+      const blocks = editorRef.current.querySelectorAll('.canvas-preview-block')
+      blocks.forEach((block) => {
+        const canvasId = block.getAttribute('data-canvas-id')
+        if (canvasId) {
+          const canvas = funnels.find((f) => f.id === canvasId)
+          if (canvas) {
+            block.setAttribute(
+              'style',
+              'margin: 32px 0; user-select: none; display: flex; flex-direction: column; align-items: flex-start;',
+            )
+            const newInnerHtml = getCanvasPreviewInnerHtml(canvas)
+            if (block.innerHTML !== newInnerHtml) {
+              block.innerHTML = newInnerHtml
+              hasChanges = true
+            }
+          }
+        }
+      })
+
+      if (hasChanges) {
+        onChange(editorRef.current.innerHTML)
+      }
     }
   }, [doc.id])
 
@@ -150,14 +276,8 @@ export default function RichTextEditor({
     if (!canvas) return
 
     const html = `
-      <div contenteditable="false" class="canvas-preview-block group" data-canvas-id="${canvas.id}" style="display: flex; justify-content: center; margin: 32px 0; user-select: none;">
-        <div class="border border-border bg-muted/50 p-6 rounded-lg w-full max-w-[500px] text-center shadow-sm cursor-pointer transition-all hover:border-primary hover:bg-primary/5 hover:ring-1 hover:ring-primary">
-          <div class="flex items-center justify-center gap-2 mb-3 text-primary">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 17V7h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/></svg>
-          </div>
-          <h4 class="m-0 mb-1 text-base font-semibold text-foreground">${canvas.name}</h4>
-          <p class="m-0 text-sm font-medium text-primary">Clique para editar o Canvas</p>
-        </div>
+      <div contenteditable="false" class="canvas-preview-block group" data-canvas-id="${canvas.id}" style="margin: 32px 0; user-select: none; display: flex; flex-direction: column; align-items: flex-start;">
+        ${getCanvasPreviewInnerHtml(canvas)}
       </div>
       <p><br></p>
     `
@@ -188,6 +308,24 @@ export default function RichTextEditor({
     setFunnels(
       funnels.map((f) => (f.id === updatedFunnel.id ? updatedFunnel : f)),
     )
+
+    if (editorRef.current) {
+      let hasChanges = false
+      const blocks = editorRef.current.querySelectorAll(
+        `.canvas-preview-block[data-canvas-id="${updatedFunnel.id}"]`,
+      )
+      blocks.forEach((block) => {
+        block.setAttribute(
+          'style',
+          'margin: 32px 0; user-select: none; display: flex; flex-direction: column; align-items: flex-start;',
+        )
+        block.innerHTML = getCanvasPreviewInnerHtml(updatedFunnel)
+        hasChanges = true
+      })
+      if (hasChanges) {
+        onChange(editorRef.current.innerHTML)
+      }
+    }
   }
 
   const activeCanvas = funnels.find((f) => f.id === editingCanvasId)
