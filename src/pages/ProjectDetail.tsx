@@ -27,7 +27,8 @@ import { format } from 'date-fns'
 
 import TasksBoard from '@/components/tasks/TasksBoard'
 import TaskDetailSheet from '@/components/tasks/TaskDetailSheet'
-import { Task } from '@/types'
+import CanvasBoard from '@/components/canvas/CanvasBoard'
+import { Task, Funnel } from '@/types'
 
 const mockActivities = [
   {
@@ -72,6 +73,7 @@ export default function ProjectDetail() {
   const [assets] = useAssetStore()
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [selectedFunnelId, setSelectedFunnelId] = useState<string | null>(null)
 
   const project = projects.find((p) => p.id === id)
 
@@ -122,6 +124,10 @@ export default function ProjectDetail() {
 
   const updateTask = (taskId: string, updates: Partial<Task>) => {
     setTasks(tasks.map((t) => (t.id === taskId ? { ...t, ...updates } : t)))
+  }
+
+  const updateFunnel = (updated: Funnel) => {
+    setFunnels(funnels.map((f) => (f.id === updated.id ? updated : f)))
   }
 
   return (
@@ -199,7 +205,7 @@ export default function ProjectDetail() {
                 value="funnels"
                 className="rounded-full px-5 py-2.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-slate-200 transition-all"
               >
-                <Network className="w-4 h-4 mr-2" /> Funnels
+                <Network className="w-4 h-4 mr-2" /> Funis (Canvas)
               </TabsTrigger>
               <TabsTrigger
                 value="documents"
@@ -419,89 +425,109 @@ export default function ProjectDetail() {
 
               <TabsContent
                 value="funnels"
-                className="mt-0 h-full border-none outline-none pb-8 animate-fade-in"
+                className="mt-0 h-full border-none outline-none pb-8 animate-fade-in flex flex-col min-h-0"
               >
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-semibold">Funis do Projeto</h3>
-                  <Button
-                    onClick={() => {
-                      const newFunnel = {
-                        id: `f_${Date.now()}`,
-                        projectId: project.id,
-                        folderId: null,
-                        name: 'Novo Funil',
-                        status: 'Rascunho' as const,
-                        createdAt: new Date().toISOString(),
-                        nodes: [],
-                        edges: [],
-                      }
-                      setFunnels([...funnels, newFunnel])
-                      navigate(`/canvas/${newFunnel.id}`)
-                    }}
-                  >
-                    <Plus size={16} className="mr-2" /> Novo Funil
-                  </Button>
-                </div>
-                {projectFunnels.length > 0 ? (
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {projectFunnels.map((f) => (
-                      <Card
-                        key={f.id}
-                        className="cursor-pointer hover:shadow-md transition-shadow group border-slate-200 hover:border-purple-200 overflow-hidden"
-                        onClick={() => navigate(`/canvas/${f.id}`)}
+                {!selectedFunnelId ? (
+                  <div className="overflow-auto pr-2 pb-4">
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-lg font-semibold">
+                        Funis do Projeto
+                      </h3>
+                      <Button
+                        onClick={() => {
+                          const newFunnel: Funnel = {
+                            id: `f_${Date.now()}`,
+                            projectId: project.id,
+                            folderId: null,
+                            name: 'Novo Funil',
+                            status: 'Rascunho',
+                            createdAt: new Date().toISOString(),
+                            nodes: [],
+                            edges: [],
+                          }
+                          setFunnels([...funnels, newFunnel])
+                          setSelectedFunnelId(newFunnel.id)
+                        }}
                       >
-                        <div
-                          className="h-32 bg-slate-50 border-b border-slate-100 relative"
-                          style={{
-                            backgroundImage:
-                              'radial-gradient(#cbd5e1 1px, transparent 0)',
-                            backgroundSize: '16px 16px',
-                          }}
-                        >
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/40 backdrop-blur-[2px] z-10">
-                            <Button
-                              variant="secondary"
-                              className="bg-white shadow-sm hover:bg-slate-50 text-purple-600 rounded-xl pointer-events-none"
-                            >
-                              Abrir Canvas
-                            </Button>
-                          </div>
-                          {f.nodes.length > 0 && (
-                            <div className="absolute inset-0 flex items-center justify-center opacity-40 scale-75">
-                              <Network size={64} className="text-slate-400" />
-                            </div>
-                          )}
-                        </div>
-                        <CardHeader className="p-4 pb-2">
-                          <CardTitle className="text-base font-semibold text-slate-800">
-                            {f.name}
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 flex justify-between items-center">
-                          <span className="text-xs text-slate-500">
-                            {f.nodes.length} blocos
-                          </span>
-                          <Badge
-                            variant="outline"
-                            className="bg-slate-50 text-slate-600 border-slate-200"
+                        <Plus size={16} className="mr-2" /> Novo Funil
+                      </Button>
+                    </div>
+                    {projectFunnels.length > 0 ? (
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {projectFunnels.map((f) => (
+                          <Card
+                            key={f.id}
+                            className="cursor-pointer hover:shadow-md transition-shadow group border-slate-200 hover:border-purple-200 overflow-hidden"
+                            onClick={() => setSelectedFunnelId(f.id)}
                           >
-                            {f.status}
-                          </Badge>
-                        </CardContent>
-                      </Card>
-                    ))}
+                            <div
+                              className="h-32 bg-slate-50 border-b border-slate-100 relative"
+                              style={{
+                                backgroundImage:
+                                  'radial-gradient(#cbd5e1 1px, transparent 0)',
+                                backgroundSize: '16px 16px',
+                              }}
+                            >
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-white/40 backdrop-blur-[2px] z-10">
+                                <Button
+                                  variant="secondary"
+                                  className="bg-white shadow-sm hover:bg-slate-50 text-purple-600 rounded-xl pointer-events-none"
+                                >
+                                  Abrir Canvas
+                                </Button>
+                              </div>
+                              {f.nodes.length > 0 && (
+                                <div className="absolute inset-0 flex items-center justify-center opacity-40 scale-75">
+                                  <Network
+                                    size={64}
+                                    className="text-slate-400"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                            <CardHeader className="p-4 pb-2">
+                              <CardTitle className="text-base font-semibold text-slate-800">
+                                {f.name}
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-4 pt-0 flex justify-between items-center">
+                              <span className="text-xs text-slate-500">
+                                {f.nodes.length} blocos
+                              </span>
+                              <Badge
+                                variant="outline"
+                                className="bg-slate-50 text-slate-600 border-slate-200"
+                              >
+                                {f.status}
+                              </Badge>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-20 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex flex-col items-center">
+                        <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-slate-400">
+                          <Network size={24} />
+                        </div>
+                        <h3 className="text-lg font-medium text-slate-700">
+                          Nenhum funil encontrado
+                        </h3>
+                        <p className="text-slate-500 mt-1 mb-4">
+                          Crie o primeiro funil para este projeto.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <div className="py-20 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 flex flex-col items-center">
-                    <div className="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-slate-400">
-                      <Network size={24} />
-                    </div>
-                    <h3 className="text-lg font-medium text-slate-700">
-                      Nenhum funil encontrado
-                    </h3>
-                    <p className="text-slate-500 mt-1 mb-4">
-                      Crie o primeiro funil para este projeto.
-                    </p>
+                  <div className="flex-1 relative rounded-[2rem] border border-slate-200 overflow-hidden bg-[#f8fafc] shadow-sm flex flex-col min-h-[600px] -mx-4 sm:mx-0">
+                    <CanvasBoard
+                      funnel={
+                        projectFunnels.find((f) => f.id === selectedFunnelId)!
+                      }
+                      onChange={updateFunnel}
+                      hideHeader
+                      onBack={() => setSelectedFunnelId(null)}
+                    />
                   </div>
                 )}
               </TabsContent>
