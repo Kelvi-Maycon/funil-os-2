@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { Document } from '@/types'
 import { Button } from '@/components/ui/button'
 import {
@@ -38,6 +38,7 @@ export default function RichTextEditor({
   const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null)
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [imageUrl, setImageUrl] = useState('')
+  const [savedRange, setSavedRange] = useState<Range | null>(null)
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== doc.content) {
@@ -45,16 +46,96 @@ export default function RichTextEditor({
     }
   }, [doc.id])
 
+  const saveSelection = useCallback(() => {
+    const selection = window.getSelection()
+    if (selection && selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0)
+      if (
+        editorRef.current &&
+        editorRef.current.contains(range.commonAncestorContainer)
+      ) {
+        setSavedRange(range.cloneRange())
+      }
+    }
+  }, [])
+
+  const restoreSelection = useCallback(() => {
+    editorRef.current?.focus()
+    if (savedRange) {
+      const selection = window.getSelection()
+      if (selection) {
+        selection.removeAllRanges()
+        selection.addRange(savedRange)
+      }
+    } else {
+      if (editorRef.current) {
+        const range = document.createRange()
+        range.selectNodeContents(editorRef.current)
+        range.collapse(false)
+        const selection = window.getSelection()
+        if (selection) {
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+      }
+    }
+  }, [savedRange])
+
+  const insertHtmlAtSelection = (htmlString: string) => {
+    restoreSelection()
+
+    let success = false
+    try {
+      success = document.execCommand('insertHTML', false, htmlString)
+    } catch (e) {
+      success = false
+    }
+
+    if (!success) {
+      const selection = window.getSelection()
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0)
+        range.deleteContents()
+
+        const el = document.createElement('div')
+        el.innerHTML = htmlString
+
+        const frag = document.createDocumentFragment()
+        let node, lastNode
+        while ((node = el.firstChild)) {
+          lastNode = frag.appendChild(node)
+        }
+
+        range.insertNode(frag)
+
+        if (lastNode) {
+          range.setStartAfter(lastNode)
+          range.collapse(true)
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+      }
+    }
+
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML)
+    }
+  }
+
   const exec = (cmd: string, val?: string) => {
     document.execCommand(cmd, false, val)
     editorRef.current?.focus()
-    onChange(editorRef.current?.innerHTML || '')
+    if (editorRef.current) {
+      onChange(editorRef.current.innerHTML)
+    }
   }
 
   const insertImage = (e: React.FormEvent) => {
     e.preventDefault()
     if (!imageUrl.trim()) return
-    exec('insertImage', imageUrl)
+    insertHtmlAtSelection(
+      `<img src="${imageUrl}" alt="Imagem Inserida" style="max-width: 100%; border-radius: 8px; margin: 16px 0;" /><p><br></p>`,
+    )
     setImageUrl('')
     setImageModalOpen(false)
   }
@@ -77,9 +158,14 @@ export default function RichTextEditor({
       <p><br></p>
     `
 
-    exec('insertHTML', html)
+    insertHtmlAtSelection(html)
+
     setCanvasModalOpen(false)
     setSelectedCanvasId(null)
+  }
+
+  const handleToolbarMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault()
   }
 
   return (
@@ -94,6 +180,7 @@ export default function RichTextEditor({
         <Button
           variant="ghost"
           size="icon"
+          onMouseDown={handleToolbarMouseDown}
           onClick={() => exec('formatBlock', 'H1')}
           title="Título 1"
         >
@@ -102,6 +189,7 @@ export default function RichTextEditor({
         <Button
           variant="ghost"
           size="icon"
+          onMouseDown={handleToolbarMouseDown}
           onClick={() => exec('formatBlock', 'H2')}
           title="Título 2"
         >
@@ -111,6 +199,7 @@ export default function RichTextEditor({
         <Button
           variant="ghost"
           size="icon"
+          onMouseDown={handleToolbarMouseDown}
           onClick={() => exec('bold')}
           title="Negrito"
         >
@@ -119,6 +208,7 @@ export default function RichTextEditor({
         <Button
           variant="ghost"
           size="icon"
+          onMouseDown={handleToolbarMouseDown}
           onClick={() => exec('italic')}
           title="Itálico"
         >
@@ -128,6 +218,7 @@ export default function RichTextEditor({
         <Button
           variant="ghost"
           size="icon"
+          onMouseDown={handleToolbarMouseDown}
           onClick={() => exec('insertUnorderedList')}
           title="Lista"
         >
@@ -136,6 +227,7 @@ export default function RichTextEditor({
         <Button
           variant="ghost"
           size="icon"
+          onMouseDown={handleToolbarMouseDown}
           onClick={() => exec('formatBlock', 'BLOCKQUOTE')}
           title="Citação"
         >
@@ -144,6 +236,7 @@ export default function RichTextEditor({
         <Button
           variant="ghost"
           size="icon"
+          onMouseDown={handleToolbarMouseDown}
           onClick={() => exec('insertHorizontalRule')}
           title="Divisor"
         >
@@ -154,7 +247,12 @@ export default function RichTextEditor({
 
         <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
           <DialogTrigger asChild>
-            <Button variant="ghost" size="icon" title="Adicionar Imagem">
+            <Button
+              variant="ghost"
+              size="icon"
+              onMouseDown={() => saveSelection()}
+              title="Adicionar Imagem"
+            >
               <ImageIcon size={18} />
             </Button>
           </DialogTrigger>
@@ -181,6 +279,7 @@ export default function RichTextEditor({
             <Button
               variant="ghost"
               size="sm"
+              onMouseDown={() => saveSelection()}
               className="ml-auto flex items-center bg-primary/5 hover:bg-primary/10 text-primary transition-colors"
               title="Importar Canvas"
             >
@@ -235,8 +334,16 @@ export default function RichTextEditor({
       <div
         ref={editorRef}
         contentEditable
-        className="flex-1 outline-none prose prose-indigo max-w-none focus:outline-none min-h-[500px]"
-        onBlur={(e) => onChange(e.currentTarget.innerHTML)}
+        className="flex-1 outline-none prose prose-indigo max-w-none focus:outline-none min-h-[500px] pb-32"
+        onBlur={(e) => {
+          saveSelection()
+          onChange(e.currentTarget.innerHTML)
+        }}
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
+        onInput={(e) => {
+          onChange(e.currentTarget.innerHTML)
+        }}
         style={{ caretColor: 'hsl(var(--primary))' }}
       />
     </div>
