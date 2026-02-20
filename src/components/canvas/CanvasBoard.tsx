@@ -1,10 +1,22 @@
 import { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Funnel, Node, Edge, NodeData } from '@/types'
 import BlockPalette from './BlockPalette'
 import NodeItem from './NodeItem'
 import RightPanel from './RightPanel'
 import { NodeSettingsModal } from './NodeSettingsModal'
-import { Plus, Minus, Maximize, Map, Grid } from 'lucide-react'
+import {
+  Plus,
+  Minus,
+  Maximize,
+  Map,
+  Grid,
+  Edit2,
+  Image as ImageIcon,
+  FileText,
+  Settings,
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 export default function CanvasBoard({
@@ -14,15 +26,16 @@ export default function CanvasBoard({
   funnel: Funnel
   onChange: (f: Funnel) => void
 }) {
+  const navigate = useNavigate()
   const [selectedNode, setSelectedNode] = useState<string | null>(null)
   const [notesNodeId, setNotesNodeId] = useState<string | null>(null)
   const [settingsNodeId, setSettingsNodeId] = useState<string | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
 
-  const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 })
+  const [transform, setTransform] = useState({ x: 400, y: 150, scale: 1 })
   const [isPanning, setIsPanning] = useState(false)
-  const [showMinimap, setShowMinimap] = useState(true)
-  const [snapToGrid, setSnapToGrid] = useState(false)
+  const [showMinimap, setShowMinimap] = useState(false)
+  const [snapToGrid, setSnapToGrid] = useState(true)
   const [draggedNode, setDraggedNode] = useState<{
     id: string
     x: number
@@ -64,7 +77,8 @@ export default function CanvasBoard({
   const handlePanStart = (e: React.PointerEvent) => {
     if (
       e.target === boardRef.current ||
-      (e.target as HTMLElement).classList.contains('canvas-container')
+      (e.target as HTMLElement).classList.contains('canvas-container') ||
+      (e.target as HTMLElement).tagName === 'svg'
     ) {
       setIsPanning(true)
       lastPan.current = { x: e.clientX, y: e.clientY }
@@ -102,12 +116,12 @@ export default function CanvasBoard({
     if (!type) return
     const rect = boardRef.current?.getBoundingClientRect()
     if (!rect) return
-    let x = (e.clientX - rect.left - transform.x) / transform.scale - 140
-    let y = (e.clientY - rect.top - transform.y) / transform.scale - 37
+    let x = (e.clientX - rect.left - transform.x) / transform.scale - 130
+    let y = (e.clientY - rect.top - transform.y) / transform.scale - 40
 
     if (snapToGrid) {
-      x = Math.round(x / 24) * 24
-      y = Math.round(y / 24) * 24
+      x = Math.round(x / 28) * 28
+      y = Math.round(y / 28) * 28
     }
 
     const newNode: Node = {
@@ -115,7 +129,7 @@ export default function CanvasBoard({
       type,
       x,
       y,
-      data: { name: type, status: 'A Fazer', subtitle: 'Configure this step' },
+      data: { name: type, status: 'A Fazer', subtitle: '+1 filter' },
     }
     onChange({ ...funnel, nodes: [...funnel.nodes, newNode] })
   }
@@ -128,8 +142,8 @@ export default function CanvasBoard({
     let newY = parent.y
 
     if (snapToGrid) {
-      newX = Math.round(newX / 24) * 24
-      newY = Math.round(newY / 24) * 24
+      newX = Math.round(newX / 28) * 28
+      newY = Math.round(newY / 28) * 28
     }
 
     const newNode: Node = {
@@ -138,9 +152,9 @@ export default function CanvasBoard({
       x: newX,
       y: newY,
       data: {
-        name: 'New Action',
+        name: 'New Step',
         status: 'A Fazer',
-        subtitle: 'Configure this step',
+        subtitle: '+1 filter',
       },
     }
     const newEdge: Edge = {
@@ -187,77 +201,87 @@ export default function CanvasBoard({
   }
 
   const handleZoomIn = () =>
-    setTransform((p) => ({ ...p, scale: Math.min(3, p.scale + 0.2) }))
+    setTransform((p) => ({ ...p, scale: Math.min(3, p.scale + 0.1) }))
   const handleZoomOut = () =>
-    setTransform((p) => ({ ...p, scale: Math.max(0.1, p.scale - 0.2) }))
-  const handleFitView = () => {
-    if (funnel.nodes.length === 0) return setTransform({ x: 0, y: 0, scale: 1 })
-    const minX = Math.min(...funnel.nodes.map((n) => n.x))
-    const maxX = Math.max(...funnel.nodes.map((n) => n.x + 280))
-    const minY = Math.min(...funnel.nodes.map((n) => n.y))
-    const maxY = Math.max(...funnel.nodes.map((n) => n.y + 74))
-
-    const w = maxX - minX
-    const h = maxY - minY
-
-    const board = boardRef.current?.getBoundingClientRect()
-    if (!board) return
-
-    const scaleX = (board.width - 200) / (w || 1)
-    const scaleY = (board.height - 200) / (h || 1)
-    const scale = Math.min(scaleX, scaleY, 1)
-
-    const x = (board.width - w * scale) / 2 - minX * scale
-    const y = (board.height - h * scale) / 2 - minY * scale
-
-    setTransform({ x, y, scale })
-  }
-
-  const getMinimapView = () => {
-    const nodes = funnel.nodes.map((n) =>
-      draggedNode?.id === n.id
-        ? { ...n, x: draggedNode.x, y: draggedNode.y }
-        : n,
-    )
-    if (nodes.length === 0) return { scale: 0.1, x: 0, y: 0, nodes: [] }
-    const minX = Math.min(
-      ...nodes.map((n) => n.x),
-      -transform.x / transform.scale,
-    )
-    const maxX = Math.max(
-      ...nodes.map((n) => n.x + 280),
-      (-transform.x + (boardRef.current?.clientWidth || 800)) / transform.scale,
-    )
-    const minY = Math.min(
-      ...nodes.map((n) => n.y),
-      -transform.y / transform.scale,
-    )
-    const maxY = Math.max(
-      ...nodes.map((n) => n.y + 74),
-      (-transform.y + (boardRef.current?.clientHeight || 600)) /
-        transform.scale,
-    )
-
-    const w = maxX - minX
-    const h = maxY - minY
-
-    const scaleX = 200 / (w || 1)
-    const scaleY = 120 / (h || 1)
-    const scale = Math.min(scaleX, scaleY, 0.1)
-
-    return { scale, x: -minX, y: -minY, nodes }
-  }
+    setTransform((p) => ({ ...p, scale: Math.max(0.1, p.scale - 0.1) }))
+  const handleFitView = () => setTransform({ x: 400, y: 150, scale: 1 })
 
   return (
     <div className="flex-1 flex relative overflow-hidden">
-      <BlockPalette />
+      {/* Floating Header */}
+      <div className="absolute top-8 left-[360px] flex items-center gap-3 text-[15px] z-20">
+        <span
+          className="text-slate-400 font-medium cursor-pointer hover:text-slate-700 transition-colors"
+          onClick={() => navigate('/canvas')}
+        >
+          Campaigns
+        </span>
+        <span className="text-slate-300">/</span>
+        <span className="font-semibold text-slate-800">{funnel.name}</span>
+        <button className="text-slate-400 hover:text-slate-700 transition-colors ml-1">
+          <Edit2 size={16} strokeWidth={2} />
+        </button>
+      </div>
+
+      {/* Floating Toolbar */}
+      <div className="absolute top-8 right-8 flex items-center gap-1 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 p-1.5 z-20">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-10 h-10 rounded-xl text-slate-500 hover:bg-slate-50"
+        >
+          <ImageIcon size={18} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-10 h-10 rounded-xl text-slate-500 hover:bg-slate-50"
+        >
+          <FileText size={18} />
+        </Button>
+        <div className="w-px h-6 bg-slate-100 mx-1.5" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-10 h-10 rounded-xl text-slate-500 hover:bg-slate-50"
+          onClick={handleFitView}
+        >
+          <Maximize size={16} />
+        </Button>
+        <span className="text-sm font-semibold text-slate-600 px-3 min-w-[3.5rem] text-center">
+          {Math.round(transform.scale * 100)}%
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-10 h-10 rounded-xl text-slate-500 hover:bg-slate-50"
+          onClick={handleZoomOut}
+        >
+          <Minus size={18} />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="w-10 h-10 rounded-xl text-slate-500 hover:bg-slate-50"
+          onClick={handleZoomIn}
+        >
+          <Plus size={18} />
+        </Button>
+      </div>
+
+      {/* Floating Palette */}
+      <div className="absolute top-6 left-8 z-20 bottom-6 flex pointer-events-none">
+        <div className="pointer-events-auto flex h-full">
+          <BlockPalette />
+        </div>
+      </div>
 
       <div
         ref={boardRef}
-        className="flex-1 relative bg-[#fbfbfc] canvas-container overflow-hidden"
+        className="flex-1 relative bg-[#f8fafc] canvas-container overflow-hidden"
         style={{
           backgroundPosition: `${transform.x}px ${transform.y}px`,
-          backgroundSize: `${24 * transform.scale}px ${24 * transform.scale}px`,
+          backgroundSize: `${28 * transform.scale}px ${28 * transform.scale}px`,
         }}
         onPointerDown={handlePanStart}
         onPointerMove={handlePanMove}
@@ -268,7 +292,8 @@ export default function CanvasBoard({
         onClick={(e) => {
           if (
             e.target === boardRef.current ||
-            (e.target as HTMLElement).classList.contains('canvas-container')
+            (e.target as HTMLElement).classList.contains('canvas-container') ||
+            (e.target as HTMLElement).tagName === 'svg'
           ) {
             setSelectedNode(null)
           }
@@ -281,20 +306,7 @@ export default function CanvasBoard({
           }}
           className="absolute inset-0 w-full h-full pointer-events-none"
         >
-          <svg className="absolute inset-0 w-full h-full overflow-visible z-0">
-            <defs>
-              <marker
-                id="arrowhead"
-                viewBox="0 0 10 10"
-                refX="8"
-                refY="5"
-                markerWidth="6"
-                markerHeight="6"
-                orient="auto"
-              >
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
-              </marker>
-            </defs>
+          <svg className="absolute inset-0 w-full h-full overflow-visible z-0 pointer-events-none">
             {funnel.edges.map((e) => {
               const sourceNode = funnel.nodes.find((n) => n.id === e.source)
               const targetNode = funnel.nodes.find((n) => n.id === e.target)
@@ -310,11 +322,11 @@ export default function CanvasBoard({
               const targetY =
                 draggedNode?.id === e.target ? draggedNode.y : targetNode.y
 
-              const startX = sourceX + 280
-              const startY = sourceY + 37
+              const startX = sourceX + 260
+              const startY = sourceY + 44
               const endX = targetX
-              const endY = targetY + 37
-              const d = `M ${startX} ${startY} C ${startX + 60} ${startY}, ${endX - 60} ${endY}, ${endX} ${endY}`
+              const endY = targetY + 44
+              const d = `M ${startX} ${startY} C ${startX + 50} ${startY}, ${endX - 50} ${endY}, ${endX} ${endY}`
               return (
                 <path
                   key={e.id}
@@ -322,7 +334,6 @@ export default function CanvasBoard({
                   stroke="#cbd5e1"
                   strokeWidth="2"
                   fill="none"
-                  markerEnd="url(#arrowhead)"
                 />
               )
             })}
@@ -368,99 +379,18 @@ export default function CanvasBoard({
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-6 flex flex-col gap-3 z-20">
-        <div className="bg-white border shadow-sm rounded-lg flex flex-col overflow-hidden pointer-events-auto">
-          <button
-            onClick={handleZoomIn}
-            className="p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-b transition-colors"
-            title="Zoom In"
-          >
-            <Plus size={18} />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            className="p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-b transition-colors"
-            title="Zoom Out"
-          >
-            <Minus size={18} />
-          </button>
-          <button
-            onClick={handleFitView}
-            className="p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-            title="Fit View"
-          >
-            <Maximize size={18} />
-          </button>
-        </div>
-        <div className="flex gap-2 pointer-events-auto">
-          <button
-            onClick={() => setSnapToGrid(!snapToGrid)}
-            className={cn(
-              'p-2 bg-white border shadow-sm rounded-lg text-slate-600 hover:bg-slate-50 transition-colors',
-              snapToGrid && 'bg-primary/10 text-primary border-primary/20',
-            )}
-            title="Toggle Snap to Grid"
-          >
-            <Grid size={18} />
-          </button>
-          <button
-            onClick={() => setShowMinimap(!showMinimap)}
-            className={cn(
-              'p-2 bg-white border shadow-sm rounded-lg text-slate-600 hover:bg-slate-50 transition-colors',
-              showMinimap && 'bg-slate-100',
-            )}
-            title="Toggle Minimap"
-          >
-            <Map size={18} />
-          </button>
-        </div>
+      <div className="absolute bottom-8 right-8 flex gap-2 z-20">
+        <button
+          onClick={() => setSnapToGrid(!snapToGrid)}
+          className={cn(
+            'w-12 h-12 flex items-center justify-center bg-white border border-slate-100 shadow-[0_4px_15px_rgba(0,0,0,0.03)] rounded-2xl text-slate-500 hover:bg-slate-50 transition-colors',
+            snapToGrid && 'bg-slate-100 text-slate-800 border-slate-200',
+          )}
+          title="Toggle Snap to Grid"
+        >
+          <Grid size={18} />
+        </button>
       </div>
-
-      {showMinimap && (
-        <div className="absolute bottom-6 right-6 w-56 h-36 bg-white border shadow-md rounded-xl z-20 p-2 pointer-events-none">
-          <div className="relative w-full h-full bg-slate-50 rounded border overflow-hidden flex items-center justify-center">
-            {(() => {
-              const mapInfo = getMinimapView()
-              return (
-                <div style={{ width: 200, height: 120, position: 'relative' }}>
-                  <div
-                    style={{
-                      transform: `scale(${mapInfo.scale})`,
-                      transformOrigin: '0 0',
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                    }}
-                  >
-                    {mapInfo.nodes.map((n) => (
-                      <div
-                        key={n.id}
-                        style={{
-                          transform: `translate3d(${n.x + mapInfo.x}px, ${n.y + mapInfo.y}px, 0)`,
-                          width: 280,
-                          height: 74,
-                        }}
-                        className="absolute top-0 left-0 bg-primary/20 border border-primary/40 rounded-sm"
-                      />
-                    ))}
-                    {boardRef.current && (
-                      <div
-                        className="absolute border-2 border-primary bg-primary/10 top-0 left-0"
-                        style={{
-                          transform: `translate3d(${-transform.x / transform.scale + mapInfo.x}px, ${-transform.y / transform.scale + mapInfo.y}px, 0)`,
-                          width: boardRef.current.clientWidth / transform.scale,
-                          height:
-                            boardRef.current.clientHeight / transform.scale,
-                        }}
-                      />
-                    )}
-                  </div>
-                </div>
-              )
-            })()}
-          </div>
-        </div>
-      )}
 
       {notesNodeId && funnel.nodes.find((n) => n.id === notesNodeId) && (
         <RightPanel

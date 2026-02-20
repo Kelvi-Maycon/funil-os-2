@@ -15,6 +15,16 @@ import {
   Trash2,
   Globe,
   Check,
+  Zap,
+  Smartphone,
+  BellRing,
+  MessageSquare,
+  UserPlus,
+  Send,
+  RefreshCw,
+  Edit3,
+  Clock,
+  ExternalLink,
 } from 'lucide-react'
 
 const icons: Record<string, any> = {
@@ -26,7 +36,17 @@ const icons: Record<string, any> = {
   Upsell: HandHeart,
   Obrigado: CheckCircle,
   Form: FileText,
-  Default: Globe,
+  InApp: Smartphone,
+  Push: BellRing,
+  Slack: MessageSquare,
+  SMS: MessageCircle,
+  CreatePerson: UserPlus,
+  SendEvent: Send,
+  BatchUpdate: RefreshCw,
+  ManualUpdate: Edit3,
+  DataSync: Globe,
+  WaitUntil: Clock,
+  Default: Zap,
 }
 
 type NodeItemProps = {
@@ -87,8 +107,8 @@ export default function NodeItem({
       let newY = initialY + (moveEvent.clientY - startY) / scale
 
       if (snapToGrid) {
-        newX = Math.round(newX / 24) * 24
-        newY = Math.round(newY / 24) * 24
+        newX = Math.round(newX / 28) * 28
+        newY = Math.round(newY / 28) * 28
       }
 
       onMove(newX, newY)
@@ -108,8 +128,8 @@ export default function NodeItem({
       let finalY = initialY + (upEvent.clientY - startY) / scale
 
       if (snapToGrid) {
-        finalX = Math.round(finalX / 24) * 24
-        finalY = Math.round(finalY / 24) * 24
+        finalX = Math.round(finalX / 28) * 28
+        finalY = Math.round(finalY / 28) * 28
       }
 
       onMoveEnd(finalX, finalY)
@@ -127,38 +147,41 @@ export default function NodeItem({
   return (
     <div
       className={cn(
-        'absolute top-0 left-0 pointer-events-auto w-[280px] bg-white border border-slate-200 rounded-xl shadow-sm p-3 z-10 flex items-center gap-3 group select-none',
+        'absolute top-0 left-0 pointer-events-auto w-[260px] bg-white rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-100 p-5 z-10 flex flex-col gap-2 group select-none transition-all',
         (selected || isHovered) &&
-          'ring-1 ring-primary/30 border-primary/50 shadow-md',
+          'shadow-[0_8px_30px_rgba(0,0,0,0.06)] border-slate-200 ring-4 ring-slate-50',
         isDragging &&
-          'opacity-95 scale-[1.02] z-50 shadow-lg ring-2 ring-primary/50',
+          'opacity-90 scale-[1.02] z-50 shadow-[0_12px_40px_rgba(0,0,0,0.1)] ring-4 ring-primary/10 border-primary/20',
       )}
       style={{
         transform: `translate3d(${node.x}px, ${node.y}px, 0)`,
         transition: isDragging
           ? 'none'
-          : 'transform 0.1s ease-out, box-shadow 0.2s ease-out, opacity 0.2s',
+          : 'transform 0.15s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s, opacity 0.2s',
         cursor: isDragging ? 'grabbing' : 'grab',
       }}
       onPointerDown={handlePointerDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="w-[50px] h-[50px] rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
-        <Icon size={22} strokeWidth={1.5} className="text-slate-800" />
+      <div className="flex items-center gap-2 text-slate-500 mb-1">
+        <Icon size={16} strokeWidth={1.5} />
+        <span className="text-[13px] font-medium tracking-wide">
+          {node.type}
+        </span>
       </div>
-      <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
-        <h4 className="font-bold text-[15px] text-slate-900 truncate leading-tight">
+      <div className="flex flex-col">
+        <h4 className="font-semibold text-slate-800 text-[15px] truncate">
           {node.data.name}
         </h4>
-        <span className="text-[13px] text-slate-500 truncate leading-tight">
-          {node.data.subtitle || 'Configure this step'}
+        <span className="text-[13px] text-slate-400 mt-0.5 truncate">
+          {node.data.subtitle || '+1 filter'}
         </span>
       </div>
 
       <div
         className={cn(
-          'flex flex-col items-center justify-center gap-1.5 px-1 transition-opacity',
+          'absolute -top-3 -right-3 flex items-center gap-1.5 transition-opacity',
           selected || isHovered
             ? 'opacity-100'
             : 'opacity-0 pointer-events-none',
@@ -169,20 +192,30 @@ export default function NodeItem({
             e.stopPropagation()
             onOpenSettings()
           }}
-          className="text-slate-400 hover:text-slate-700 transition-colors bg-white"
+          className="w-8 h-8 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 shadow-sm transition-transform hover:scale-105"
           title="Settings"
         >
-          <Settings size={18} strokeWidth={1.5} />
+          <Settings size={14} strokeWidth={2} />
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation()
             onOpenNotes()
           }}
-          className="text-slate-400 hover:text-slate-700 transition-colors bg-white"
+          className="w-8 h-8 bg-white border border-slate-100 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 shadow-sm transition-transform hover:scale-105"
           title="Notes"
         >
-          <FileText size={18} strokeWidth={1.5} />
+          <FileText size={14} strokeWidth={2} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
+          className="w-8 h-8 bg-white border border-slate-100 rounded-full flex items-center justify-center text-red-500 hover:text-red-600 shadow-sm transition-transform hover:scale-105"
+          title="Delete"
+        >
+          <Trash2 size={14} strokeWidth={2} />
         </button>
       </div>
 
@@ -193,17 +226,17 @@ export default function NodeItem({
             onToggleComplete()
           }}
           className={cn(
-            'absolute -top-3 right-3 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-20 shadow-sm',
+            'absolute -bottom-3 left-4 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors z-20 shadow-sm bg-white',
             node.data.isCompleted
               ? 'border-green-500 bg-green-500 text-white'
-              : 'border-primary/50 bg-white hover:border-primary text-transparent',
+              : 'border-slate-200 hover:border-slate-300 text-transparent',
           )}
           title={
             node.data.isCompleted ? 'Mark as incomplete' : 'Mark as complete'
           }
         >
           <Check
-            size={14}
+            size={12}
             strokeWidth={3}
             className={cn(
               'transition-opacity',
@@ -213,41 +246,17 @@ export default function NodeItem({
         </button>
       )}
 
-      <div
-        className={cn(
-          'absolute -right-4 top-1/2 -translate-y-1/2 transition-opacity z-20',
-          selected || isHovered
-            ? 'opacity-100'
-            : 'opacity-0 pointer-events-none',
-        )}
-      >
+      {/* Exit point styling matching reference */}
+      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-20">
         <button
           onClick={(e) => {
             e.stopPropagation()
             onAddChild()
           }}
-          className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-transform hover:scale-105"
+          className="h-8 px-3 bg-white border border-slate-100 rounded-xl shadow-sm flex items-center justify-center gap-1.5 text-slate-500 hover:text-slate-800 hover:border-slate-200 transition-all font-medium text-[11px]"
         >
-          <Plus size={18} strokeWidth={2} />
-        </button>
-      </div>
-
-      <div
-        className={cn(
-          'absolute -right-3 -bottom-3 transition-opacity z-20',
-          selected || isHovered
-            ? 'opacity-100'
-            : 'opacity-0 pointer-events-none',
-        )}
-      >
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete()
-          }}
-          className="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-md transition-transform hover:scale-105"
-        >
-          <Trash2 size={15} strokeWidth={2} />
+          <ExternalLink size={12} strokeWidth={2} />
+          Exit
         </button>
       </div>
     </div>
