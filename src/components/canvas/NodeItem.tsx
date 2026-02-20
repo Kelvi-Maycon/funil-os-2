@@ -10,7 +10,10 @@ import {
   HandHeart,
   CheckCircle,
   FileText,
-  Box,
+  Settings,
+  Plus,
+  Trash2,
+  Globe,
 } from 'lucide-react'
 
 const icons: Record<string, any> = {
@@ -22,7 +25,18 @@ const icons: Record<string, any> = {
   Upsell: HandHeart,
   Obrigado: CheckCircle,
   Form: FileText,
-  Default: Box,
+  Default: Globe,
+}
+
+type NodeItemProps = {
+  node: Node
+  selected: boolean
+  onSelect: () => void
+  onMove: (x: number, y: number) => void
+  scale: number
+  onOpenNotes: () => void
+  onDelete: () => void
+  onAddChild: () => void
 }
 
 export default function NodeItem({
@@ -30,20 +44,17 @@ export default function NodeItem({
   selected,
   onSelect,
   onMove,
-  onConnect,
-  allNodes,
-}: {
-  node: Node
-  selected: boolean
-  onSelect: () => void
-  onMove: (x: number, y: number) => void
-  onConnect: (id: string) => void
-  allNodes: Node[]
-}) {
+  scale,
+  onOpenNotes,
+  onDelete,
+  onAddChild,
+}: NodeItemProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if ((e.target as HTMLElement).closest('.handle')) return
+    if ((e.target as HTMLElement).closest('button')) return
+
     e.stopPropagation()
     setIsDragging(true)
     onSelect()
@@ -54,8 +65,8 @@ export default function NodeItem({
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
       onMove(
-        initialX + moveEvent.clientX - startX,
-        initialY + moveEvent.clientY - startY,
+        initialX + (moveEvent.clientX - startX) / scale,
+        initialY + (moveEvent.clientY - startY) / scale,
       )
     }
 
@@ -74,33 +85,91 @@ export default function NodeItem({
   return (
     <div
       className={cn(
-        'absolute w-60 bg-card border rounded-xl shadow-sm p-4 cursor-grab z-10 transition-shadow',
-        selected && 'ring-2 ring-primary border-primary shadow-md',
-        isDragging &&
-          'cursor-grabbing opacity-90 scale-105 transition-transform',
+        'absolute pointer-events-auto w-[280px] bg-white border border-slate-200 rounded-xl shadow-sm p-3 z-10 transition-all flex items-center gap-3 group',
+        (selected || isHovered) &&
+          'ring-1 ring-primary/30 border-primary/50 shadow-md',
+        isDragging && 'cursor-grabbing opacity-95 scale-[1.02]',
       )}
-      style={{ transform: `translate(${node.x}px, ${node.y}px)` }}
+      style={{ left: node.x, top: node.y }}
       onPointerDown={handlePointerDown}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-primary/10 text-primary rounded-lg">
-          <Icon size={20} />
-        </div>
-        <div className="flex-1 overflow-hidden">
-          <h4 className="font-medium text-sm text-card-foreground truncate">
-            {node.data.name}
-          </h4>
-          <span className="text-xs text-muted-foreground truncate block">
-            {node.type}
-          </span>
-        </div>
+      <div className="w-[50px] h-[50px] rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
+        <Icon size={22} strokeWidth={1.5} className="text-slate-800" />
       </div>
-      {selected && (
-        <div
-          className="handle absolute right-[-10px] top-1/2 -translate-y-1/2 w-5 h-5 bg-primary rounded-full cursor-crosshair border-2 border-card shadow-sm hover:scale-125 transition-transform"
-          title="Arraste para conectar (Implementação visual)"
-        />
-      )}
+      <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
+        <h4 className="font-bold text-[15px] text-slate-900 truncate leading-tight">
+          {node.data.name}
+        </h4>
+        <span className="text-[13px] text-slate-500 truncate leading-tight">
+          {node.data.subtitle || 'Configure this step'}
+        </span>
+      </div>
+
+      <div
+        className={cn(
+          'flex flex-col items-center justify-center gap-1.5 px-1 transition-opacity',
+          selected || isHovered
+            ? 'opacity-100'
+            : 'opacity-0 pointer-events-none',
+        )}
+      >
+        <button
+          className="text-slate-400 hover:text-slate-700 transition-colors bg-white"
+          title="Settings"
+        >
+          <Settings size={18} strokeWidth={1.5} />
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onOpenNotes()
+          }}
+          className="text-slate-400 hover:text-slate-700 transition-colors bg-white"
+          title="Notes"
+        >
+          <FileText size={18} strokeWidth={1.5} />
+        </button>
+      </div>
+
+      <div
+        className={cn(
+          'absolute -right-4 top-1/2 -translate-y-1/2 transition-opacity z-20',
+          selected || isHovered
+            ? 'opacity-100'
+            : 'opacity-0 pointer-events-none',
+        )}
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onAddChild()
+          }}
+          className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-transform hover:scale-105"
+        >
+          <Plus size={18} strokeWidth={2} />
+        </button>
+      </div>
+
+      <div
+        className={cn(
+          'absolute -right-3 -bottom-3 transition-opacity z-20',
+          selected || isHovered
+            ? 'opacity-100'
+            : 'opacity-0 pointer-events-none',
+        )}
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
+          className="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center shadow-md transition-transform hover:scale-105"
+        >
+          <Trash2 size={15} strokeWidth={2} />
+        </button>
+      </div>
     </div>
   )
 }

@@ -5,7 +5,12 @@ export type Project = {
   status: 'Ativo' | 'Pausado' | 'Concluído'
   createdAt: string
 }
-export type NodeData = { name: string; status: string; notes?: string }
+export type NodeData = {
+  name: string
+  status: string
+  notes?: string
+  subtitle?: string
+}
 export type Node = {
   id: string
   type: string
