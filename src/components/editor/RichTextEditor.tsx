@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
-import { Document } from '@/types'
+import { Document, Funnel } from '@/types'
 import { Button } from '@/components/ui/button'
 import {
   Bold,
@@ -11,6 +11,7 @@ import {
   SeparatorHorizontal,
   Image as ImageIcon,
   Network,
+  X,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -22,6 +23,8 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import useFunnelStore from '@/stores/useFunnelStore'
+import CanvasBoard from '@/components/canvas/CanvasBoard'
+import { cn } from '@/lib/utils'
 
 export default function RichTextEditor({
   doc,
@@ -33,12 +36,13 @@ export default function RichTextEditor({
   onTitleChange: (t: string) => void
 }) {
   const editorRef = useRef<HTMLDivElement>(null)
-  const [funnels] = useFunnelStore()
+  const [funnels, setFunnels] = useFunnelStore()
   const [canvasModalOpen, setCanvasModalOpen] = useState(false)
   const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null)
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [imageUrl, setImageUrl] = useState('')
   const [savedRange, setSavedRange] = useState<Range | null>(null)
+  const [editingCanvasId, setEditingCanvasId] = useState<string | null>(null)
 
   useEffect(() => {
     if (editorRef.current && editorRef.current.innerHTML !== doc.content) {
@@ -146,13 +150,13 @@ export default function RichTextEditor({
     if (!canvas) return
 
     const html = `
-      <div contenteditable="false" style="display: flex; justify-content: center; margin: 32px 0; user-select: none;">
-        <div style="border: 1px solid hsl(var(--border)); background-color: hsl(var(--muted)/0.5); padding: 24px; border-radius: 8px; width: 100%; max-width: 500px; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; color: hsl(var(--primary));">
+      <div contenteditable="false" class="canvas-preview-block group" data-canvas-id="${canvas.id}" style="display: flex; justify-content: center; margin: 32px 0; user-select: none;">
+        <div class="border border-border bg-muted/50 p-6 rounded-lg w-full max-w-[500px] text-center shadow-sm cursor-pointer transition-all hover:border-primary hover:bg-primary/5 hover:ring-1 hover:ring-primary">
+          <div class="flex items-center justify-center gap-2 mb-3 text-primary">
              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M9 17V7h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2z"/></svg>
           </div>
-          <h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: hsl(var(--foreground));">${canvas.name}</h4>
-          <p style="margin: 0; font-size: 13px; color: hsl(var(--muted-foreground));">Preview do Canvas (${canvas.nodes.length} blocos)</p>
+          <h4 class="m-0 mb-1 text-base font-semibold text-foreground">${canvas.name}</h4>
+          <p class="m-0 text-sm font-medium text-primary">Clique para editar o Canvas</p>
         </div>
       </div>
       <p><br></p>
@@ -168,184 +172,245 @@ export default function RichTextEditor({
     e.preventDefault()
   }
 
+  const handleEditorClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement
+    const canvasBlock = target.closest('.canvas-preview-block')
+    if (canvasBlock) {
+      const canvasId = canvasBlock.getAttribute('data-canvas-id')
+      if (canvasId) {
+        e.preventDefault()
+        setEditingCanvasId(canvasId)
+      }
+    }
+  }
+
+  const handleCanvasChange = (updatedFunnel: Funnel) => {
+    setFunnels(
+      funnels.map((f) => (f.id === updatedFunnel.id ? updatedFunnel : f)),
+    )
+  }
+
+  const activeCanvas = funnels.find((f) => f.id === editingCanvasId)
+
   return (
-    <div className="flex flex-col h-full max-w-4xl mx-auto w-full p-8">
-      <input
-        value={doc.title}
-        onChange={(e) => onTitleChange(e.target.value)}
-        className="text-4xl font-bold border-none outline-none focus:ring-0 mb-8 bg-transparent text-foreground placeholder:text-muted-foreground"
-        placeholder="Título do Documento"
-      />
-      <div className="flex items-center gap-1 mb-6 border-b pb-4 sticky top-0 bg-background/95 backdrop-blur z-10">
-        <Button
-          variant="ghost"
-          size="icon"
-          onMouseDown={handleToolbarMouseDown}
-          onClick={() => exec('formatBlock', 'H1')}
-          title="Título 1"
+    <div className="flex w-full h-full overflow-hidden bg-background relative">
+      <div
+        className={cn(
+          'flex flex-col h-full overflow-y-auto transition-[width] duration-300 ease-in-out',
+          editingCanvasId ? 'w-[50%] border-r' : 'w-full',
+        )}
+      >
+        <div
+          className={cn(
+            'flex flex-col flex-1 mx-auto w-full transition-all duration-300',
+            editingCanvasId ? 'p-6 max-w-3xl' : 'p-8 max-w-4xl',
+          )}
         >
-          <Heading1 size={18} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onMouseDown={handleToolbarMouseDown}
-          onClick={() => exec('formatBlock', 'H2')}
-          title="Título 2"
-        >
-          <Heading2 size={18} />
-        </Button>
-        <Separator orientation="vertical" className="h-6 mx-2" />
-        <Button
-          variant="ghost"
-          size="icon"
-          onMouseDown={handleToolbarMouseDown}
-          onClick={() => exec('bold')}
-          title="Negrito"
-        >
-          <Bold size={18} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onMouseDown={handleToolbarMouseDown}
-          onClick={() => exec('italic')}
-          title="Itálico"
-        >
-          <Italic size={18} />
-        </Button>
-        <Separator orientation="vertical" className="h-6 mx-2" />
-        <Button
-          variant="ghost"
-          size="icon"
-          onMouseDown={handleToolbarMouseDown}
-          onClick={() => exec('insertUnorderedList')}
-          title="Lista"
-        >
-          <List size={18} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onMouseDown={handleToolbarMouseDown}
-          onClick={() => exec('formatBlock', 'BLOCKQUOTE')}
-          title="Citação"
-        >
-          <Quote size={18} />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onMouseDown={handleToolbarMouseDown}
-          onClick={() => exec('insertHorizontalRule')}
-          title="Divisor"
-        >
-          <SeparatorHorizontal size={18} />
-        </Button>
-
-        <Separator orientation="vertical" className="h-6 mx-2" />
-
-        <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
-          <DialogTrigger asChild>
+          <input
+            value={doc.title}
+            onChange={(e) => onTitleChange(e.target.value)}
+            className="text-4xl font-bold border-none outline-none focus:ring-0 mb-8 bg-transparent text-foreground placeholder:text-muted-foreground shrink-0"
+            placeholder="Título do Documento"
+          />
+          <div className="flex items-center gap-1 mb-6 border-b pb-4 sticky top-0 bg-background/95 backdrop-blur z-10 shrink-0">
             <Button
               variant="ghost"
               size="icon"
-              onMouseDown={() => saveSelection()}
-              title="Adicionar Imagem"
+              onMouseDown={handleToolbarMouseDown}
+              onClick={() => exec('formatBlock', 'H1')}
+              title="Título 1"
             >
-              <ImageIcon size={18} />
+              <Heading1 size={18} />
             </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Adicionar Imagem</DialogTitle>
-            </DialogHeader>
-            <form onSubmit={insertImage} className="space-y-4 pt-4">
-              <Input
-                placeholder="URL da Imagem (ex: https://...)"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                autoFocus
-              />
-              <Button type="submit" className="w-full">
-                Inserir Imagem
-              </Button>
-            </form>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={canvasModalOpen} onOpenChange={setCanvasModalOpen}>
-          <DialogTrigger asChild>
             <Button
               variant="ghost"
-              size="sm"
-              onMouseDown={() => saveSelection()}
-              className="ml-auto flex items-center bg-primary/5 hover:bg-primary/10 text-primary transition-colors"
-              title="Importar Canvas"
+              size="icon"
+              onMouseDown={handleToolbarMouseDown}
+              onClick={() => exec('formatBlock', 'H2')}
+              title="Título 2"
             >
-              <Network size={16} className="mr-2" /> Importar Canvas
+              <Heading2 size={18} />
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Selecionar Canvas</DialogTitle>
-            </DialogHeader>
-            <div className="grid grid-cols-2 gap-4 py-4 max-h-[60vh] overflow-y-auto px-1">
-              {funnels.map((f) => (
-                <div
-                  key={f.id}
-                  onClick={() => setSelectedCanvasId(f.id)}
-                  className={`border rounded-lg p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 ${selectedCanvasId === f.id ? 'border-primary ring-1 ring-primary bg-primary/5' : 'hover:border-primary/50 bg-card'}`}
+            <Separator orientation="vertical" className="h-6 mx-2" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onMouseDown={handleToolbarMouseDown}
+              onClick={() => exec('bold')}
+              title="Negrito"
+            >
+              <Bold size={18} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onMouseDown={handleToolbarMouseDown}
+              onClick={() => exec('italic')}
+              title="Itálico"
+            >
+              <Italic size={18} />
+            </Button>
+            <Separator orientation="vertical" className="h-6 mx-2" />
+            <Button
+              variant="ghost"
+              size="icon"
+              onMouseDown={handleToolbarMouseDown}
+              onClick={() => exec('insertUnorderedList')}
+              title="Lista"
+            >
+              <List size={18} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onMouseDown={handleToolbarMouseDown}
+              onClick={() => exec('formatBlock', 'BLOCKQUOTE')}
+              title="Citação"
+            >
+              <Quote size={18} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onMouseDown={handleToolbarMouseDown}
+              onClick={() => exec('insertHorizontalRule')}
+              title="Divisor"
+            >
+              <SeparatorHorizontal size={18} />
+            </Button>
+
+            <Separator orientation="vertical" className="h-6 mx-2" />
+
+            <Dialog open={imageModalOpen} onOpenChange={setImageModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onMouseDown={() => saveSelection()}
+                  title="Adicionar Imagem"
                 >
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mb-1">
-                    <Network
-                      size={20}
-                      className={
-                        selectedCanvasId === f.id
-                          ? 'text-primary'
-                          : 'text-muted-foreground'
-                      }
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-sm">{f.name}</h4>
-                    <p className="text-xs text-muted-foreground">
-                      {f.nodes.length} blocos mapeados
-                    </p>
-                  </div>
+                  <ImageIcon size={18} />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Adicionar Imagem</DialogTitle>
+                </DialogHeader>
+                <form onSubmit={insertImage} className="space-y-4 pt-4">
+                  <Input
+                    placeholder="URL da Imagem (ex: https://...)"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    autoFocus
+                  />
+                  <Button type="submit" className="w-full">
+                    Inserir Imagem
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={canvasModalOpen} onOpenChange={setCanvasModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onMouseDown={() => saveSelection()}
+                  className="ml-auto flex items-center bg-primary/5 hover:bg-primary/10 text-primary transition-colors shrink-0"
+                  title="Importar Canvas"
+                >
+                  <Network size={16} className="mr-2" /> Importar Canvas
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Selecionar Canvas</DialogTitle>
+                </DialogHeader>
+                <div className="grid grid-cols-2 gap-4 py-4 max-h-[60vh] overflow-y-auto px-1">
+                  {funnels.map((f) => (
+                    <div
+                      key={f.id}
+                      onClick={() => setSelectedCanvasId(f.id)}
+                      className={`border rounded-lg p-4 cursor-pointer transition-all flex flex-col items-center justify-center text-center gap-2 ${selectedCanvasId === f.id ? 'border-primary ring-1 ring-primary bg-primary/5' : 'hover:border-primary/50 bg-card'}`}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center mb-1">
+                        <Network
+                          size={20}
+                          className={
+                            selectedCanvasId === f.id
+                              ? 'text-primary'
+                              : 'text-muted-foreground'
+                          }
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm">{f.name}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {f.nodes.length} blocos mapeados
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {funnels.length === 0 && (
+                    <div className="col-span-2 text-center py-8 text-muted-foreground text-sm">
+                      Nenhum canvas disponível para importação.
+                    </div>
+                  )}
                 </div>
-              ))}
-              {funnels.length === 0 && (
-                <div className="col-span-2 text-center py-8 text-muted-foreground text-sm">
-                  Nenhum canvas disponível para importação.
-                </div>
-              )}
+                <Button
+                  onClick={insertCanvas}
+                  disabled={!selectedCanvasId}
+                  className="w-full"
+                >
+                  Importar
+                </Button>
+              </DialogContent>
+            </Dialog>
+          </div>
+          <div
+            ref={editorRef}
+            contentEditable
+            className="flex-1 outline-none prose prose-indigo max-w-none focus:outline-none min-h-[500px] pb-32"
+            onBlur={(e) => {
+              saveSelection()
+              onChange(e.currentTarget.innerHTML)
+            }}
+            onKeyUp={saveSelection}
+            onMouseUp={saveSelection}
+            onInput={(e) => {
+              onChange(e.currentTarget.innerHTML)
+            }}
+            onClick={handleEditorClick}
+            style={{ caretColor: 'hsl(var(--primary))' }}
+          />
+        </div>
+      </div>
+
+      {editingCanvasId && activeCanvas && (
+        <div className="w-[50%] h-full flex flex-col bg-background shadow-[-10px_0_30px_rgba(0,0,0,0.05)] animate-in slide-in-from-right z-20 shrink-0">
+          <div className="h-14 border-b flex items-center justify-between px-4 bg-card shrink-0">
+            <div className="flex items-center gap-2 text-primary">
+              <Network size={18} />
+              <h3 className="font-semibold text-sm text-foreground">
+                {activeCanvas.name}
+              </h3>
             </div>
             <Button
-              onClick={insertCanvas}
-              disabled={!selectedCanvasId}
-              className="w-full"
+              variant="ghost"
+              size="icon"
+              onClick={() => setEditingCanvasId(null)}
             >
-              Importar
+              <X
+                size={18}
+                className="text-muted-foreground hover:text-foreground"
+              />
             </Button>
-          </DialogContent>
-        </Dialog>
-      </div>
-      <div
-        ref={editorRef}
-        contentEditable
-        className="flex-1 outline-none prose prose-indigo max-w-none focus:outline-none min-h-[500px] pb-32"
-        onBlur={(e) => {
-          saveSelection()
-          onChange(e.currentTarget.innerHTML)
-        }}
-        onKeyUp={saveSelection}
-        onMouseUp={saveSelection}
-        onInput={(e) => {
-          onChange(e.currentTarget.innerHTML)
-        }}
-        style={{ caretColor: 'hsl(var(--primary))' }}
-      />
+          </div>
+          <div className="flex-1 relative flex overflow-hidden">
+            <CanvasBoard funnel={activeCanvas} onChange={handleCanvasChange} />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
