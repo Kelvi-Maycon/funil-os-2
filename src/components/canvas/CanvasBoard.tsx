@@ -4,7 +4,7 @@ import BlockPalette from './BlockPalette'
 import NodeItem from './NodeItem'
 import RightPanel from './RightPanel'
 import { NodeSettingsModal } from './NodeSettingsModal'
-import { Plus, Minus, Maximize, Map } from 'lucide-react'
+import { Plus, Minus, Maximize, Map, Grid } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export default function CanvasBoard({
@@ -22,6 +22,12 @@ export default function CanvasBoard({
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 })
   const [isPanning, setIsPanning] = useState(false)
   const [showMinimap, setShowMinimap] = useState(true)
+  const [snapToGrid, setSnapToGrid] = useState(false)
+  const [draggedNode, setDraggedNode] = useState<{
+    id: string
+    x: number
+    y: number
+  } | null>(null)
   const lastPan = useRef({ x: 0, y: 0 })
 
   useEffect(() => {
@@ -63,6 +69,8 @@ export default function CanvasBoard({
       setIsPanning(true)
       lastPan.current = { x: e.clientX, y: e.clientY }
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+      document.body.style.userSelect = 'none'
+      document.body.style.cursor = 'grabbing'
     }
   }
 
@@ -78,7 +86,11 @@ export default function CanvasBoard({
   const handlePanEnd = (e: React.PointerEvent) => {
     if (isPanning) {
       setIsPanning(false)
-      ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+      try {
+        ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
+      } catch (err) {}
+      document.body.style.userSelect = ''
+      document.body.style.cursor = ''
     }
   }
 
@@ -88,8 +100,13 @@ export default function CanvasBoard({
     if (!type) return
     const rect = boardRef.current?.getBoundingClientRect()
     if (!rect) return
-    const x = (e.clientX - rect.left - transform.x) / transform.scale - 140
-    const y = (e.clientY - rect.top - transform.y) / transform.scale - 37
+    let x = (e.clientX - rect.left - transform.x) / transform.scale - 140
+    let y = (e.clientY - rect.top - transform.y) / transform.scale - 37
+
+    if (snapToGrid) {
+      x = Math.round(x / 24) * 24
+      y = Math.round(y / 24) * 24
+    }
 
     const newNode: Node = {
       id: `n_${Date.now()}`,
@@ -101,22 +118,23 @@ export default function CanvasBoard({
     onChange({ ...funnel, nodes: [...funnel.nodes, newNode] })
   }
 
-  const handleNodeMove = (id: string, x: number, y: number) => {
-    onChange({
-      ...funnel,
-      nodes: funnel.nodes.map((n) => (n.id === id ? { ...n, x, y } : n)),
-    })
-  }
-
   const handleAddChild = (parentId: string) => {
     const parent = funnel.nodes.find((n) => n.id === parentId)
     if (!parent) return
     const newId = `n_${Date.now()}`
+    let newX = parent.x + 350
+    let newY = parent.y
+
+    if (snapToGrid) {
+      newX = Math.round(newX / 24) * 24
+      newY = Math.round(newY / 24) * 24
+    }
+
     const newNode: Node = {
       id: newId,
       type: 'Default',
-      x: parent.x + 350,
-      y: parent.y,
+      x: newX,
+      y: newY,
       data: {
         name: 'New Action',
         status: 'A Fazer',
@@ -194,21 +212,26 @@ export default function CanvasBoard({
   }
 
   const getMinimapView = () => {
-    if (funnel.nodes.length === 0) return { scale: 0.1, x: 0, y: 0 }
+    const nodes = funnel.nodes.map((n) =>
+      draggedNode?.id === n.id
+        ? { ...n, x: draggedNode.x, y: draggedNode.y }
+        : n,
+    )
+    if (nodes.length === 0) return { scale: 0.1, x: 0, y: 0, nodes: [] }
     const minX = Math.min(
-      ...funnel.nodes.map((n) => n.x),
+      ...nodes.map((n) => n.x),
       -transform.x / transform.scale,
     )
     const maxX = Math.max(
-      ...funnel.nodes.map((n) => n.x + 280),
+      ...nodes.map((n) => n.x + 280),
       (-transform.x + (boardRef.current?.clientWidth || 800)) / transform.scale,
     )
     const minY = Math.min(
-      ...funnel.nodes.map((n) => n.y),
+      ...nodes.map((n) => n.y),
       -transform.y / transform.scale,
     )
     const maxY = Math.max(
-      ...funnel.nodes.map((n) => n.y + 74),
+      ...nodes.map((n) => n.y + 74),
       (-transform.y + (boardRef.current?.clientHeight || 600)) /
         transform.scale,
     )
@@ -220,7 +243,7 @@ export default function CanvasBoard({
     const scaleY = 120 / (h || 1)
     const scale = Math.min(scaleX, scaleY, 0.1)
 
-    return { scale, x: -minX, y: -minY }
+    return { scale, x: -minX, y: -minY, nodes }
   }
 
   return (
@@ -251,7 +274,7 @@ export default function CanvasBoard({
       >
         <div
           style={{
-            transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+            transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`,
             transformOrigin: '0 0',
           }}
           className="absolute inset-0 w-full h-full pointer-events-none"
@@ -271,13 +294,24 @@ export default function CanvasBoard({
               </marker>
             </defs>
             {funnel.edges.map((e) => {
-              const source = funnel.nodes.find((n) => n.id === e.source)
-              const target = funnel.nodes.find((n) => n.id === e.target)
-              if (!source || !target) return null
-              const startX = source.x + 280
-              const startY = source.y + 37
-              const endX = target.x
-              const endY = target.y + 37
+              const sourceNode = funnel.nodes.find((n) => n.id === e.source)
+              const targetNode = funnel.nodes.find((n) => n.id === e.target)
+              if (!sourceNode || !targetNode) return null
+
+              const sourceX =
+                draggedNode?.id === e.source ? draggedNode.x : sourceNode.x
+              const sourceY =
+                draggedNode?.id === e.source ? draggedNode.y : sourceNode.y
+
+              const targetX =
+                draggedNode?.id === e.target ? draggedNode.x : targetNode.x
+              const targetY =
+                draggedNode?.id === e.target ? draggedNode.y : targetNode.y
+
+              const startX = sourceX + 280
+              const startY = sourceY + 37
+              const endX = targetX
+              const endY = targetY + 37
               const d = `M ${startX} ${startY} C ${startX + 60} ${startY}, ${endX - 60} ${endY}, ${endX} ${endY}`
               return (
                 <path
@@ -293,27 +327,47 @@ export default function CanvasBoard({
           </svg>
 
           <div className="absolute inset-0 w-full h-full pointer-events-none">
-            {funnel.nodes.map((n) => (
-              <NodeItem
-                key={n.id}
-                node={n}
-                selected={selectedNode === n.id}
-                onSelect={() => setSelectedNode(n.id)}
-                onMove={(x, y) => handleNodeMove(n.id, x, y)}
-                onAddChild={() => handleAddChild(n.id)}
-                onDelete={() => handleDeleteNode(n.id)}
-                onOpenNotes={() => setNotesNodeId(n.id)}
-                onOpenSettings={() => setSettingsNodeId(n.id)}
-                onToggleComplete={() => handleToggleComplete(n.id)}
-                scale={transform.scale}
-              />
-            ))}
+            {funnel.nodes.map((n) => {
+              const isDragged = draggedNode?.id === n.id
+              const displayNode = isDragged
+                ? { ...n, x: draggedNode.x, y: draggedNode.y }
+                : n
+
+              return (
+                <NodeItem
+                  key={n.id}
+                  node={displayNode}
+                  selected={selectedNode === n.id}
+                  snapToGrid={snapToGrid}
+                  onSelect={() => setSelectedNode(n.id)}
+                  onMoveStart={() =>
+                    setDraggedNode({ id: n.id, x: n.x, y: n.y })
+                  }
+                  onMove={(x, y) => setDraggedNode({ id: n.id, x, y })}
+                  onMoveEnd={(x, y) => {
+                    setDraggedNode(null)
+                    onChange({
+                      ...funnel,
+                      nodes: funnel.nodes.map((node) =>
+                        node.id === n.id ? { ...node, x, y } : node,
+                      ),
+                    })
+                  }}
+                  onAddChild={() => handleAddChild(n.id)}
+                  onDelete={() => handleDeleteNode(n.id)}
+                  onOpenNotes={() => setNotesNodeId(n.id)}
+                  onOpenSettings={() => setSettingsNodeId(n.id)}
+                  onToggleComplete={() => handleToggleComplete(n.id)}
+                  scale={transform.scale}
+                />
+              )
+            })}
           </div>
         </div>
       </div>
 
       <div className="absolute bottom-6 left-6 flex flex-col gap-3 z-20">
-        <div className="bg-white border shadow-sm rounded-lg flex flex-col overflow-hidden">
+        <div className="bg-white border shadow-sm rounded-lg flex flex-col overflow-hidden pointer-events-auto">
           <button
             onClick={handleZoomIn}
             className="p-2 text-slate-600 hover:bg-slate-50 hover:text-slate-900 border-b transition-colors"
@@ -336,16 +390,28 @@ export default function CanvasBoard({
             <Maximize size={18} />
           </button>
         </div>
-        <button
-          onClick={() => setShowMinimap(!showMinimap)}
-          className={cn(
-            'p-2 bg-white border shadow-sm rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors',
-            showMinimap && 'bg-slate-100',
-          )}
-          title="Toggle Minimap"
-        >
-          <Map size={18} />
-        </button>
+        <div className="flex gap-2 pointer-events-auto">
+          <button
+            onClick={() => setSnapToGrid(!snapToGrid)}
+            className={cn(
+              'p-2 bg-white border shadow-sm rounded-lg text-slate-600 hover:bg-slate-50 transition-colors',
+              snapToGrid && 'bg-primary/10 text-primary border-primary/20',
+            )}
+            title="Toggle Snap to Grid"
+          >
+            <Grid size={18} />
+          </button>
+          <button
+            onClick={() => setShowMinimap(!showMinimap)}
+            className={cn(
+              'p-2 bg-white border shadow-sm rounded-lg text-slate-600 hover:bg-slate-50 transition-colors',
+              showMinimap && 'bg-slate-100',
+            )}
+            title="Toggle Minimap"
+          >
+            <Map size={18} />
+          </button>
+        </div>
       </div>
 
       {showMinimap && (
@@ -364,24 +430,22 @@ export default function CanvasBoard({
                       top: 0,
                     }}
                   >
-                    {funnel.nodes.map((n) => (
+                    {mapInfo.nodes.map((n) => (
                       <div
                         key={n.id}
                         style={{
-                          left: n.x + mapInfo.x,
-                          top: n.y + mapInfo.y,
+                          transform: `translate3d(${n.x + mapInfo.x}px, ${n.y + mapInfo.y}px, 0)`,
                           width: 280,
                           height: 74,
                         }}
-                        className="absolute bg-primary/20 border border-primary/40 rounded-sm"
+                        className="absolute top-0 left-0 bg-primary/20 border border-primary/40 rounded-sm"
                       />
                     ))}
                     {boardRef.current && (
                       <div
-                        className="absolute border-2 border-primary bg-primary/10"
+                        className="absolute border-2 border-primary bg-primary/10 top-0 left-0"
                         style={{
-                          left: -transform.x / transform.scale + mapInfo.x,
-                          top: -transform.y / transform.scale + mapInfo.y,
+                          transform: `translate3d(${-transform.x / transform.scale + mapInfo.x}px, ${-transform.y / transform.scale + mapInfo.y}px, 0)`,
                           width: boardRef.current.clientWidth / transform.scale,
                           height:
                             boardRef.current.clientHeight / transform.scale,

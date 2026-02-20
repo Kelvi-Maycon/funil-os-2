@@ -32,8 +32,11 @@ const icons: Record<string, any> = {
 type NodeItemProps = {
   node: Node
   selected: boolean
+  snapToGrid?: boolean
   onSelect: () => void
+  onMoveStart: () => void
   onMove: (x: number, y: number) => void
+  onMoveEnd: (x: number, y: number) => void
   scale: number
   onOpenNotes: () => void
   onOpenSettings: () => void
@@ -45,8 +48,11 @@ type NodeItemProps = {
 export default function NodeItem({
   node,
   selected,
+  snapToGrid,
   onSelect,
+  onMoveStart,
   onMove,
+  onMoveEnd,
   scale,
   onOpenNotes,
   onOpenSettings,
@@ -61,22 +67,51 @@ export default function NodeItem({
     if ((e.target as HTMLElement).closest('button')) return
 
     e.stopPropagation()
+
+    const target = e.currentTarget as HTMLElement
+    target.setPointerCapture(e.pointerId)
+
     setIsDragging(true)
     onSelect()
+    onMoveStart()
+
+    document.body.style.userSelect = 'none'
+
     const startX = e.clientX
     const startY = e.clientY
     const initialX = node.x
     const initialY = node.y
 
     const handlePointerMove = (moveEvent: PointerEvent) => {
-      onMove(
-        initialX + (moveEvent.clientX - startX) / scale,
-        initialY + (moveEvent.clientY - startY) / scale,
-      )
+      let newX = initialX + (moveEvent.clientX - startX) / scale
+      let newY = initialY + (moveEvent.clientY - startY) / scale
+
+      if (snapToGrid) {
+        newX = Math.round(newX / 24) * 24
+        newY = Math.round(newY / 24) * 24
+      }
+
+      onMove(newX, newY)
     }
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      try {
+        target.releasePointerCapture(upEvent.pointerId)
+      } catch (err) {}
+
       setIsDragging(false)
+      document.body.style.userSelect = ''
+
+      let finalX = initialX + (upEvent.clientX - startX) / scale
+      let finalY = initialY + (upEvent.clientY - startY) / scale
+
+      if (snapToGrid) {
+        finalX = Math.round(finalX / 24) * 24
+        finalY = Math.round(finalY / 24) * 24
+      }
+
+      onMoveEnd(finalX, finalY)
+
       window.removeEventListener('pointermove', handlePointerMove)
       window.removeEventListener('pointerup', handlePointerUp)
     }
@@ -90,12 +125,19 @@ export default function NodeItem({
   return (
     <div
       className={cn(
-        'absolute pointer-events-auto w-[280px] bg-white border border-slate-200 rounded-xl shadow-sm p-3 z-10 transition-all flex items-center gap-3 group select-none',
+        'absolute top-0 left-0 pointer-events-auto w-[280px] bg-white border border-slate-200 rounded-xl shadow-sm p-3 z-10 flex items-center gap-3 group select-none',
         (selected || isHovered) &&
           'ring-1 ring-primary/30 border-primary/50 shadow-md',
-        isDragging && 'cursor-grabbing opacity-95 scale-[1.02]',
+        isDragging &&
+          'opacity-95 scale-[1.02] z-50 shadow-lg ring-2 ring-primary/50',
       )}
-      style={{ left: node.x, top: node.y }}
+      style={{
+        transform: `translate3d(${node.x}px, ${node.y}px, 0)`,
+        transition: isDragging
+          ? 'none'
+          : 'transform 0.1s ease-out, box-shadow 0.2s ease-out, opacity 0.2s',
+        cursor: isDragging ? 'grabbing' : 'grab',
+      }}
       onPointerDown={handlePointerDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
