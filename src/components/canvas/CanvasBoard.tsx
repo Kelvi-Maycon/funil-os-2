@@ -88,7 +88,9 @@ export default function CanvasBoard({
       setIsPanning(false)
       try {
         ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
-      } catch (err) {}
+      } catch (err) {
+        // safely ignore
+      }
       document.body.style.userSelect = ''
       document.body.style.cursor = ''
     }

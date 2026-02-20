@@ -97,7 +97,9 @@ export default function NodeItem({
     const handlePointerUp = (upEvent: PointerEvent) => {
       try {
         target.releasePointerCapture(upEvent.pointerId)
-      } catch (err) {}
+      } catch (err) {
+        // safely ignore
+      }
 
       setIsDragging(false)
       document.body.style.userSelect = ''
