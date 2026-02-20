@@ -15,7 +15,64 @@ import {
 } from 'recharts'
 import { Badge } from '@/components/ui/badge'
 import { format, isPast, isToday } from 'date-fns'
-import { CheckCircle2, Clock, ListTodo, AlertCircle } from 'lucide-react'
+import {
+  CheckCircle2,
+  Clock,
+  ListTodo,
+  AlertCircle,
+  Activity,
+  MessageSquare,
+  Paperclip,
+  ArrowRightCircle,
+} from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
+const recentActivities = [
+  {
+    id: 1,
+    user: 'Jane Smith',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=female&seed=2',
+    action: 'commented on',
+    target: '',
+    task: 'Refactor Auth',
+    time: '2 hours ago',
+    icon: MessageSquare,
+    iconColor: 'text-amber-500',
+  },
+  {
+    id: 2,
+    user: 'John Doe',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=1',
+    action: 'changed status of',
+    target: 'In Progress',
+    task: 'Design Home',
+    time: '4 hours ago',
+    icon: ArrowRightCircle,
+    iconColor: 'text-blue-500',
+  },
+  {
+    id: 3,
+    user: 'Charlie',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=4',
+    action: 'attached 2 files to',
+    target: '',
+    task: 'Setup CI/CD',
+    time: 'Yesterday',
+    icon: Paperclip,
+    iconColor: 'text-slate-500',
+  },
+  {
+    id: 4,
+    user: 'Dave',
+    avatar: 'https://img.usecurling.com/ppl/thumbnail?gender=male&seed=5',
+    action: 'changed priority of',
+    target: 'High',
+    task: 'Fix Navigation Bug',
+    time: 'Yesterday',
+    icon: AlertCircle,
+    iconColor: 'text-red-500',
+  },
+]
 
 export default function TasksOverview({ tasks }: { tasks: Task[] }) {
   const total = tasks.length
@@ -99,8 +156,8 @@ export default function TasksOverview({ tasks }: { tasks: Task[] }) {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-1 lg:col-span-1">
           <CardHeader>
             <CardTitle className="text-lg">Priority Distribution</CardTitle>
           </CardHeader>
@@ -141,7 +198,7 @@ export default function TasksOverview({ tasks }: { tasks: Task[] }) {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="col-span-1 lg:col-span-1">
           <CardHeader>
             <CardTitle className="text-lg">Upcoming Deadlines</CardTitle>
           </CardHeader>
@@ -177,6 +234,61 @@ export default function TasksOverview({ tasks }: { tasks: Task[] }) {
                   No upcoming deadlines
                 </div>
               )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1 md:col-span-2 lg:col-span-1 flex flex-col">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Activity className="w-5 h-5 text-muted-foreground" />
+              Recent Updates
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <div className="space-y-6">
+              {recentActivities.map((activity) => {
+                const Icon = activity.icon
+                return (
+                  <div key={activity.id} className="flex gap-4">
+                    <div className="relative mt-1 shrink-0">
+                      <Avatar className="w-8 h-8 ring-2 ring-background">
+                        <AvatarImage src={activity.avatar} />
+                        <AvatarFallback>{activity.user[0]}</AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 shadow-sm">
+                        <Icon className={`w-3 h-3 ${activity.iconColor}`} />
+                      </div>
+                    </div>
+                    <div className="flex flex-col flex-1 gap-0.5">
+                      <div className="text-sm leading-snug text-slate-600">
+                        <span className="font-semibold text-slate-800">
+                          {activity.user}
+                        </span>{' '}
+                        {activity.action}{' '}
+                        <span className="font-medium text-slate-800">
+                          {activity.task}
+                        </span>
+                        {activity.target && (
+                          <>
+                            {' '}
+                            to{' '}
+                            <Badge
+                              variant="secondary"
+                              className="text-[10px] px-1.5 py-0 h-4"
+                            >
+                              {activity.target}
+                            </Badge>
+                          </>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {activity.time}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </CardContent>
         </Card>

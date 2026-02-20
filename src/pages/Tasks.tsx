@@ -10,8 +10,6 @@ import {
   List as ListIcon,
   KanbanSquare,
   Calendar,
-  FileText,
-  MessageSquare,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import TasksOverview from '@/components/tasks/TasksOverview'
@@ -70,20 +68,6 @@ export default function Tasks() {
             className="rounded-full px-4 py-2 text-muted-foreground"
           >
             <Calendar className="w-4 h-4 mr-2" /> Calendar
-          </TabsTrigger>
-          <TabsTrigger
-            value="documents"
-            disabled
-            className="rounded-full px-4 py-2 text-muted-foreground"
-          >
-            <FileText className="w-4 h-4 mr-2" /> Documents
-          </TabsTrigger>
-          <TabsTrigger
-            value="messages"
-            disabled
-            className="rounded-full px-4 py-2 text-muted-foreground"
-          >
-            <MessageSquare className="w-4 h-4 mr-2" /> Messages
           </TabsTrigger>
         </TabsList>
 
