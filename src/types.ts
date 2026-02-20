@@ -4,6 +4,7 @@ export type Project = {
   description: string
   status: 'Ativo' | 'Pausado' | 'Concluído'
   createdAt: string
+  folderId?: string | null
 }
 export type NodeData = {
   name: string
@@ -50,7 +51,8 @@ export type Task = {
 }
 export type Folder = {
   id: string
-  projectId: string
+  projectId?: string
+  module: 'project' | 'asset' | 'swipe' | 'insight' | 'funnel'
   name: string
   parentId: string | null
   createdAt: string
@@ -72,6 +74,7 @@ export type Asset = {
   type: 'image' | 'pdf' | 'link'
   category: string
   tags: string[]
+  folderId?: string | null
 }
 export type Insight = {
   id: string
@@ -81,6 +84,7 @@ export type Insight = {
   status: 'Rascunho' | 'Salvo' | 'Aplicado' | 'Descartado'
   createdAt: string
   isPinned: boolean
+  folderId?: string | null
 }
 export type Swipe = {
   id: string
@@ -89,4 +93,5 @@ export type Swipe = {
   category: string
   isFavorite: boolean
   notes: string
+  folderId?: string | null
 }
