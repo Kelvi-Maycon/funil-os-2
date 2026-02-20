@@ -41,12 +41,21 @@ export type Task = {
   status: 'A Fazer' | 'Em Progresso' | 'Em Revisão' | 'Concluído'
   deadline: string
 }
+export type Folder = {
+  id: string
+  projectId: string
+  name: string
+  parentId: string | null
+  createdAt: string
+  isExpanded?: boolean
+}
 export type Document = {
   id: string
   projectId: string
   title: string
   content: string
   updatedAt: string
+  folderId?: string | null
 }
 export type Asset = {
   id: string
