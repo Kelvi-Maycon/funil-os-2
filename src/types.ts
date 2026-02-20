@@ -22,9 +22,16 @@ export type Node = {
   data: NodeData
 }
 export type Edge = { id: string; source: string; target: string }
+export type FunnelFolder = {
+  id: string
+  name: string
+  parentId: string | null
+  createdAt: string
+}
 export type Funnel = {
   id: string
   projectId: string
+  folderId?: string | null
   name: string
   status: 'Rascunho' | 'Ativo' | 'Pausado' | 'Concluído'
   createdAt: string

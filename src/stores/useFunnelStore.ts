@@ -5,6 +5,7 @@ export const mockFunnels: Funnel[] = [
   {
     id: 'f1',
     projectId: 'p1',
+    folderId: 'ff1',
     name: 'Funil de Vendas Principal',
     status: 'Ativo',
     createdAt: new Date().toISOString(),
@@ -29,6 +30,7 @@ export const mockFunnels: Funnel[] = [
   {
     id: 'f2',
     projectId: 'p2',
+    folderId: null,
     name: 'Captação de Leads',
     status: 'Rascunho',
     createdAt: new Date().toISOString(),
