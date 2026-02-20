@@ -18,7 +18,7 @@ export function createStore<T>(key: string, initialData: T) {
   function setState(newState: T | ((prev: T) => T)) {
     memoryState =
       typeof newState === 'function'
-        ? (newState as Function)(memoryState)
+        ? (newState as (prev: T) => T)(memoryState)
         : newState
     localStorage.setItem(key, JSON.stringify(memoryState))
     listeners.forEach((l) => l(memoryState))
