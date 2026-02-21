@@ -8,12 +8,10 @@ import { NodeSettingsModal } from './NodeSettingsModal'
 import {
   Plus,
   Minus,
-  Maximize,
   Map,
   Grid,
   Edit2,
   Image as ImageIcon,
-  FileText,
   MousePointer2,
   Hand,
   Type,
@@ -281,231 +279,249 @@ export default function CanvasBoard({
     })
   }
 
-  const rightOffset = notesNodeId ? 'right-[520px]' : 'right-6'
+  const rightOffset = notesNodeId ? 'right-[520px]' : 'right-6 md:right-8'
 
   return (
     <div className="flex-1 flex relative overflow-hidden bg-[#f8fafc]">
-      {!hideHeader && (
-        <div className="absolute top-6 left-[340px] flex items-center gap-3 text-[14px] z-30 bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-full border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
-          <span
-            className="text-slate-500 font-medium cursor-pointer hover:text-slate-800 transition-colors"
-            onClick={() => navigate('/canvas')}
+      {/* UI: Left-aligned (bound to max-w-7xl layout for consistency with Projects) */}
+      <div className="absolute inset-0 pointer-events-none z-30 flex justify-center">
+        <div className="w-full h-full max-w-7xl relative pointer-events-none">
+          {!hideHeader && (
+            <div className="absolute top-6 md:top-8 left-[340px] md:left-[348px] flex items-center gap-3 text-[14px] bg-white/90 backdrop-blur-md px-5 py-2.5 rounded-full border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.06)] pointer-events-auto">
+              <span
+                className="text-slate-500 font-medium cursor-pointer hover:text-slate-800 transition-colors"
+                onClick={() => navigate('/canvas')}
+              >
+                Campaigns
+              </span>
+              <span className="text-slate-300">/</span>
+              <span className="font-semibold text-slate-800">
+                {funnel.name}
+              </span>
+              <button className="text-slate-400 hover:text-purple-600 transition-colors ml-1">
+                <Edit2 size={14} strokeWidth={2} />
+              </button>
+            </div>
+          )}
+
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-6 md:top-8 left-6 md:left-8 bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 rounded-full px-4 hover:bg-white text-slate-600 hover:text-slate-900 pointer-events-auto"
+              onClick={onBack}
+            >
+              <ArrowLeft size={16} className="mr-2" /> Voltar
+            </Button>
+          )}
+
+          <div
+            className={cn(
+              'absolute left-6 md:left-8 bottom-6 md:bottom-8 flex pointer-events-none transition-all',
+              onBack ? 'top-[72px] md:top-[84px]' : 'top-6 md:top-8',
+            )}
           >
-            Campaigns
-          </span>
-          <span className="text-slate-300">/</span>
-          <span className="font-semibold text-slate-800">{funnel.name}</span>
-          <button className="text-slate-400 hover:text-purple-600 transition-colors ml-1">
-            <Edit2 size={14} strokeWidth={2} />
-          </button>
-        </div>
-      )}
-
-      {onBack && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute top-6 left-6 z-30 bg-white/90 backdrop-blur-md shadow-sm border border-slate-100 rounded-full px-4 hover:bg-white text-slate-600 hover:text-slate-900"
-          onClick={onBack}
-        >
-          <ArrowLeft size={16} className="mr-2" /> Voltar
-        </Button>
-      )}
-
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 flex items-center p-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 z-30 gap-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'w-10 h-10 rounded-full transition-all',
-                !isPanMode
-                  ? 'bg-purple-100 text-purple-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700',
-              )}
-              onClick={() => setIsPanMode(false)}
-            >
-              <MousePointer2 size={18} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Select (V)</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'w-10 h-10 rounded-full transition-all',
-                isPanMode
-                  ? 'bg-purple-100 text-purple-700 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700',
-              )}
-              onClick={() => setIsPanMode(true)}
-            >
-              <Hand size={18} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Pan (H)</TooltipContent>
-        </Tooltip>
-        <div className="w-px h-6 bg-slate-200 mx-1" />
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-10 h-10 rounded-full text-slate-500 hover:text-slate-700"
-              onClick={() => handleAddAnnotation('Text', 'Add text here...')}
-            >
-              <Type size={18} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Add Text</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="w-10 h-10 rounded-full text-slate-500 hover:text-slate-700"
-              onClick={() =>
-                handleAddAnnotation(
-                  'Image',
-                  'https://img.usecurling.com/p/400/300?q=marketing',
-                )
-              }
-            >
-              <ImageIcon size={18} />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Add Image</TooltipContent>
-        </Tooltip>
-      </div>
-
-      <div
-        className={cn(
-          'absolute top-6 flex items-center p-1 bg-white/90 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 z-30 gap-1 transition-all duration-300',
-          rightOffset,
-        )}
-      >
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-8 h-8 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-          onClick={() =>
-            setTransform((p) => ({ ...p, scale: Math.max(0.1, p.scale - 0.1) }))
-          }
-        >
-          <Minus size={16} />
-        </Button>
-        <button
-          onClick={() => setTransform({ x: 400, y: 150, scale: 1 })}
-          className="text-[13px] font-semibold text-slate-600 px-3 min-w-[3.5rem] hover:text-purple-600 transition-colors text-center"
-        >
-          {Math.round(transform.scale * 100)}%
-        </button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-8 h-8 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100"
-          onClick={() =>
-            setTransform((p) => ({ ...p, scale: Math.min(3, p.scale + 0.1) }))
-          }
-        >
-          <Plus size={16} />
-        </Button>
-      </div>
-
-      <div
-        className={cn(
-          'absolute bottom-6 flex items-center gap-2 z-30 transition-all duration-300',
-          rightOffset,
-        )}
-      >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => setSnapToGrid(!snapToGrid)}
-              className={cn(
-                'w-10 h-10 flex items-center justify-center bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full text-slate-500 hover:text-slate-700 transition-all',
-                snapToGrid && 'bg-purple-50 text-purple-600 border-purple-100',
-              )}
-            >
-              <Grid size={16} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Snap to Grid</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => setShowMinimap(!showMinimap)}
-              className={cn(
-                'w-10 h-10 flex items-center justify-center bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full text-slate-500 hover:text-slate-700 transition-all',
-                showMinimap && 'bg-purple-50 text-purple-600 border-purple-100',
-              )}
-            >
-              <Map size={16} />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Minimap</TooltipContent>
-        </Tooltip>
-      </div>
-
-      <div
-        className={cn(
-          'absolute left-6 z-20 bottom-6 flex pointer-events-none transition-all',
-          onBack ? 'top-[72px]' : 'top-6',
-        )}
-      >
-        <div className="pointer-events-auto flex h-full">
-          <BlockPalette />
+            <div className="pointer-events-auto flex h-full">
+              <BlockPalette />
+            </div>
+          </div>
         </div>
       </div>
 
-      {showMinimap && (
+      {/* UI: Center & Right-aligned (full width viewport) */}
+      <div className="absolute inset-0 pointer-events-none z-30">
+        <div className="absolute top-6 md:top-8 left-1/2 -translate-x-1/2 flex items-center p-1.5 bg-white/90 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 gap-1 pointer-events-auto">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'w-10 h-10 rounded-full transition-all',
+                  !isPanMode
+                    ? 'bg-purple-100 text-purple-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700',
+                )}
+                onClick={() => setIsPanMode(false)}
+              >
+                <MousePointer2 size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Select (V)</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn(
+                  'w-10 h-10 rounded-full transition-all',
+                  isPanMode
+                    ? 'bg-purple-100 text-purple-700 shadow-sm'
+                    : 'text-slate-500 hover:text-slate-700',
+                )}
+                onClick={() => setIsPanMode(true)}
+              >
+                <Hand size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Pan (H)</TooltipContent>
+          </Tooltip>
+          <div className="w-px h-6 bg-slate-200 mx-1" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 rounded-full text-slate-500 hover:text-slate-700"
+                onClick={() => handleAddAnnotation('Text', 'Add text here...')}
+              >
+                <Type size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Add Text</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-10 h-10 rounded-full text-slate-500 hover:text-slate-700"
+                onClick={() =>
+                  handleAddAnnotation(
+                    'Image',
+                    'https://img.usecurling.com/p/400/300?q=marketing',
+                  )
+                }
+              >
+                <ImageIcon size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Add Image</TooltipContent>
+          </Tooltip>
+        </div>
+
         <div
           className={cn(
-            'absolute bottom-20 transition-all duration-300 w-48 h-32 bg-white/90 backdrop-blur-md border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-2xl overflow-hidden z-30',
+            'absolute top-6 md:top-8 flex items-center p-1 bg-white/90 backdrop-blur-md rounded-full shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 gap-1 transition-all duration-300 pointer-events-auto',
             rightOffset,
           )}
         >
-          <div
-            className="w-full h-full relative bg-slate-50/50"
-            style={{ transform: 'scale(0.08)', transformOrigin: 'top left' }}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-8 h-8 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+            onClick={() =>
+              setTransform((p) => ({
+                ...p,
+                scale: Math.max(0.1, p.scale - 0.1),
+              }))
+            }
           >
-            {funnel.nodes.map((n) => (
+            <Minus size={16} />
+          </Button>
+          <button
+            onClick={() => setTransform({ x: 400, y: 150, scale: 1 })}
+            className="text-[13px] font-semibold text-slate-600 px-3 min-w-[3.5rem] hover:text-purple-600 transition-colors text-center"
+          >
+            {Math.round(transform.scale * 100)}%
+          </button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-8 h-8 rounded-full text-slate-500 hover:text-slate-700 hover:bg-slate-100"
+            onClick={() =>
+              setTransform((p) => ({
+                ...p,
+                scale: Math.min(3, p.scale + 0.1),
+              }))
+            }
+          >
+            <Plus size={16} />
+          </Button>
+        </div>
+
+        <div
+          className={cn(
+            'absolute bottom-6 md:bottom-8 flex items-center gap-2 transition-all duration-300 pointer-events-auto',
+            rightOffset,
+          )}
+        >
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setSnapToGrid(!snapToGrid)}
+                className={cn(
+                  'w-10 h-10 flex items-center justify-center bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full text-slate-500 hover:text-slate-700 transition-all',
+                  snapToGrid &&
+                    'bg-purple-50 text-purple-600 border-purple-100',
+                )}
+              >
+                <Grid size={16} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Snap to Grid</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => setShowMinimap(!showMinimap)}
+                className={cn(
+                  'w-10 h-10 flex items-center justify-center bg-white border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-full text-slate-500 hover:text-slate-700 transition-all',
+                  showMinimap &&
+                    'bg-purple-50 text-purple-600 border-purple-100',
+                )}
+              >
+                <Map size={16} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Minimap</TooltipContent>
+          </Tooltip>
+        </div>
+
+        {showMinimap && (
+          <div
+            className={cn(
+              'absolute bottom-20 md:bottom-24 transition-all duration-300 w-48 h-32 bg-white/90 backdrop-blur-md border border-slate-200 shadow-[0_8px_30px_rgba(0,0,0,0.08)] rounded-2xl overflow-hidden pointer-events-auto',
+              rightOffset,
+            )}
+          >
+            <div
+              className="w-full h-full relative bg-slate-50/50"
+              style={{ transform: 'scale(0.08)', transformOrigin: 'top left' }}
+            >
+              {funnel.nodes.map((n) => (
+                <div
+                  key={n.id}
+                  className="absolute bg-slate-300 rounded-xl"
+                  style={{
+                    left: n.x,
+                    top: n.y,
+                    width: n.type === 'Text' || n.type === 'Image' ? 200 : 260,
+                    height: 100,
+                  }}
+                />
+              ))}
               <div
-                key={n.id}
-                className="absolute bg-slate-300 rounded-xl"
+                className="absolute border-4 border-purple-500 bg-purple-500/10 rounded-xl"
                 style={{
-                  left: n.x,
-                  top: n.y,
-                  width: n.type === 'Text' || n.type === 'Image' ? 200 : 260,
-                  height: 100,
+                  left: -transform.x / transform.scale,
+                  top: -transform.y / transform.scale,
+                  width:
+                    (boardRef.current?.clientWidth || 1000) / transform.scale,
+                  height:
+                    (boardRef.current?.clientHeight || 800) / transform.scale,
                 }}
               />
-            ))}
-            <div
-              className="absolute border-4 border-purple-500 bg-purple-500/10 rounded-xl"
-              style={{
-                left: -transform.x / transform.scale,
-                top: -transform.y / transform.scale,
-                width:
-                  (boardRef.current?.clientWidth || 1000) / transform.scale,
-                height:
-                  (boardRef.current?.clientHeight || 800) / transform.scale,
-              }}
-            />
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div
         ref={boardRef}
         className={cn(
-          'flex-1 relative canvas-container overflow-hidden',
+          'flex-1 relative canvas-container overflow-hidden z-0',
           isPanMode ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : '',
         )}
         style={{
