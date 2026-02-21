@@ -70,10 +70,10 @@ export default function Assets() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Assets</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">Assets</h1>
           <FolderBreadcrumbs
             currentFolderId={currentFolderId}
             folders={moduleFolders}
@@ -84,7 +84,10 @@ export default function Assets() {
         <div className="flex items-center gap-2">
           <ViewToggle view={view} onChange={setView} />
           <CreateFolderDialog onConfirm={handleCreateFolder} />
-          <Button onClick={() => setAction({ type: 'asset', mode: 'create' })}>
+          <Button
+            onClick={() => setAction({ type: 'asset', mode: 'create' })}
+            className="rounded-xl gradient-primary text-white border-0 shadow-lg shadow-indigo-500/20 hover:shadow-xl transition-all"
+          >
             <Plus className="mr-2" size={16} /> Novo Asset
           </Button>
         </div>
@@ -96,32 +99,34 @@ export default function Assets() {
           size={18}
         />
         <Input
-          className="pl-10 bg-white"
           placeholder="Buscar assets..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          className="pl-10 bg-white rounded-xl border-border/50"
         />
       </div>
 
       {currentFolders.length === 0 && filteredAssets.length === 0 ? (
-        <div className="py-20 text-center flex flex-col items-center">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-            <ImageIcon size={32} className="text-muted-foreground" />
+        <div className="py-20 text-center flex flex-col items-center animate-scale-in">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+            <ImageIcon size={32} className="text-indigo-400" />
           </div>
-          <h3 className="text-lg font-medium">Vazio</h3>
+          <h3 className="text-lg font-semibold">Vazio</h3>
           <p className="text-muted-foreground mb-4">
             Faça upload de um asset ou crie uma pasta.
           </p>
         </div>
       ) : view === 'grid' ? (
-        <div className="grid gap-6 grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid gap-5 grid-cols-2 md:grid-cols-4 lg:grid-cols-5 stagger-children">
           {currentFolders.map((f) => (
             <Card
               key={f.id}
               onClick={() => setCurrentFolderId(f.id)}
-              className="col-span-1 hover:shadow-md transition-all cursor-pointer h-full group border-border hover:border-primary/50 flex flex-col items-center justify-center p-6 gap-3 min-h-[140px]"
+              className="card-hover cursor-pointer h-full group border-0 shadow-sm flex flex-col items-center justify-center p-6 gap-3 min-h-[140px]"
             >
-              <FolderIcon className="text-primary fill-primary/20" size={32} />
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <FolderIcon className="text-indigo-500 fill-indigo-100" size={24} />
+              </div>
               <span className="font-semibold text-center group-hover:text-primary transition-colors text-sm">
                 {f.name}
               </span>
@@ -130,7 +135,7 @@ export default function Assets() {
           {filteredAssets.map((asset) => (
             <Card
               key={asset.id}
-              className="overflow-hidden hover:shadow-lg transition-all group border-border relative cursor-pointer"
+              className="overflow-hidden card-hover group border-0 shadow-sm relative cursor-pointer"
               onClick={() =>
                 setAction({ type: 'asset', mode: 'edit', itemId: asset.id })
               }
@@ -139,13 +144,13 @@ export default function Assets() {
                 <img
                   src={asset.url}
                   alt={asset.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] gap-2">
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center backdrop-blur-[2px] gap-2">
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="pointer-events-none"
+                    className="pointer-events-none rounded-lg shadow-sm"
                   >
                     Editar
                   </Button>
@@ -172,14 +177,14 @@ export default function Assets() {
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="text-[10px] px-1.5 py-0 font-normal"
+                      className="text-[10px] px-1.5 py-0 font-normal bg-indigo-50 text-indigo-600 border-0"
                     >
                       {tag}
                     </Badge>
                   ))}
                   <Badge
                     variant="secondary"
-                    className="text-[10px] px-1.5 py-0 font-normal"
+                    className="text-[10px] px-1.5 py-0 font-normal bg-violet-50 text-violet-600 border-0"
                   >
                     {asset.category}
                   </Badge>
@@ -189,10 +194,10 @@ export default function Assets() {
           ))}
         </div>
       ) : (
-        <div className="bg-white border rounded-lg overflow-hidden">
+        <div className="bg-white border-0 rounded-xl overflow-hidden shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-border/50">
                 <TableHead>Preview</TableHead>
                 <TableHead>Nome</TableHead>
                 <TableHead>Categoria</TableHead>
@@ -204,12 +209,12 @@ export default function Assets() {
                 <TableRow
                   key={f.id}
                   onClick={() => setCurrentFolderId(f.id)}
-                  className="cursor-pointer group"
+                  className="cursor-pointer group hover:bg-indigo-50/50 transition-colors"
                 >
                   <TableCell className="w-16">
-                    <div className="w-10 h-10 flex items-center justify-center bg-muted rounded">
+                    <div className="w-10 h-10 flex items-center justify-center bg-indigo-50 rounded-lg">
                       <FolderIcon
-                        className="text-primary fill-primary/20 group-hover:text-primary transition-colors"
+                        className="text-indigo-500 fill-indigo-100"
                         size={20}
                       />
                     </div>
@@ -222,7 +227,7 @@ export default function Assets() {
               {filteredAssets.map((a) => (
                 <TableRow
                   key={a.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  className="cursor-pointer hover:bg-indigo-50/50 transition-colors"
                   onClick={() =>
                     setAction({ type: 'asset', mode: 'edit', itemId: a.id })
                   }
@@ -231,7 +236,7 @@ export default function Assets() {
                     <img
                       src={a.url}
                       alt={a.name}
-                      className="w-10 h-10 object-cover rounded border"
+                      className="w-10 h-10 object-cover rounded-lg border"
                     />
                   </TableCell>
                   <TableCell className="font-medium">{a.name}</TableCell>
@@ -241,6 +246,7 @@ export default function Assets() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="rounded-lg"
                         onClick={() =>
                           setAction({
                             type: 'asset',

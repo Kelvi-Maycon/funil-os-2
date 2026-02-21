@@ -216,41 +216,41 @@ export default function Funnels() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <h1 className="text-3xl font-bold tracking-tight">Canvas de Funis</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">Canvas de Funis</h1>
         <div className="flex items-center gap-2">
           <ToggleGroup
             type="single"
             value={viewMode}
             onValueChange={(v) => v && setViewMode(v as 'grid' | 'list')}
-            className="bg-card border rounded-md p-0.5 shadow-sm"
+            className="bg-white border border-border/50 rounded-xl p-0.5 shadow-sm"
           >
             <ToggleGroupItem
               value="grid"
               aria-label="Visualização em Grade"
-              className="data-[state=on]:bg-muted"
+              className="rounded-lg data-[state=on]:bg-indigo-50 data-[state=on]:text-indigo-600"
             >
               <LayoutGrid size={16} />
             </ToggleGroupItem>
             <ToggleGroupItem
               value="list"
               aria-label="Visualização em Lista"
-              className="data-[state=on]:bg-muted"
+              className="rounded-lg data-[state=on]:bg-indigo-50 data-[state=on]:text-indigo-600"
             >
               <List size={16} />
             </ToggleGroupItem>
           </ToggleGroup>
-          <Button variant="outline" onClick={() => setIsCreateFolderOpen(true)}>
+          <Button variant="outline" className="rounded-xl border-border/50" onClick={() => setIsCreateFolderOpen(true)}>
             <FolderPlus size={16} className="mr-2" /> Nova Pasta
           </Button>
-          <Button onClick={handleCreateFunnel}>
+          <Button onClick={handleCreateFunnel} className="rounded-xl gradient-primary text-white border-0 shadow-lg shadow-indigo-500/20 hover:shadow-xl transition-all">
             <Plus size={16} className="mr-2" /> Novo Funil
           </Button>
         </div>
       </div>
 
-      <Breadcrumb className="bg-card px-4 py-2 border rounded-md shadow-sm">
+      <Breadcrumb className="bg-white px-4 py-2.5 border-0 rounded-xl shadow-sm">
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
@@ -305,7 +305,7 @@ export default function Funnels() {
       )}
 
       <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
-        <DialogContent>
+        <DialogContent className="rounded-2xl">
           <DialogHeader>
             <DialogTitle>Nova Pasta</DialogTitle>
           </DialogHeader>
@@ -315,8 +315,9 @@ export default function Funnels() {
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               autoFocus
+              className="rounded-xl"
             />
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full rounded-xl gradient-primary text-white border-0">
               Criar Pasta
             </Button>
           </form>
@@ -327,7 +328,7 @@ export default function Funnels() {
         open={!!renameItem}
         onOpenChange={(open) => !open && setRenameItem(null)}
       >
-        <DialogContent>
+        <DialogContent className="rounded-2xl">
           <DialogHeader>
             <DialogTitle>Renomear Pasta</DialogTitle>
           </DialogHeader>
@@ -340,8 +341,9 @@ export default function Funnels() {
                 setRenameItem({ ...renameItem, name: e.target.value })
               }
               autoFocus
+              className="rounded-xl"
             />
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full rounded-xl gradient-primary text-white border-0">
               Salvar
             </Button>
           </form>
@@ -352,7 +354,7 @@ export default function Funnels() {
         open={!!moveItem}
         onOpenChange={(open) => !open && setMoveItem(null)}
       >
-        <DialogContent>
+        <DialogContent className="rounded-2xl">
           <DialogHeader>
             <DialogTitle>
               Mover {moveItem?.type === 'folder' ? 'Pasta' : 'Funil'}
@@ -363,10 +365,10 @@ export default function Funnels() {
               value={targetFolderId || 'root'}
               onValueChange={setTargetFolderId}
             >
-              <SelectTrigger>
+              <SelectTrigger className="rounded-xl">
                 <SelectValue placeholder="Selecione o destino" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="root">Home (Raiz)</SelectItem>
                 {moveOptions.map((f) => (
                   <SelectItem key={f.id} value={f.id}>
@@ -375,7 +377,7 @@ export default function Funnels() {
                 ))}
               </SelectContent>
             </Select>
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="w-full rounded-xl gradient-primary text-white border-0">
               Mover
             </Button>
           </form>
