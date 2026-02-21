@@ -254,13 +254,13 @@ export default function ProjectDetail() {
           </TabsList>
         </div>
 
-        <div className="flex-1 overflow-auto p-6 md:p-8 bg-[#f8fafc] relative">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 md:p-8 bg-[#f8fafc] relative flex flex-col">
           <TabsContent
             value="funnels"
-            className="h-full m-0 flex flex-col border-none outline-none"
+            className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
           >
             {!selectedFunnelId ? (
-              <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+              <div className="flex flex-col flex-1 max-w-7xl mx-auto w-full">
                 <div className="flex justify-between items-center mb-6 shrink-0">
                   <h3 className="text-lg font-semibold text-slate-800">
                     Funis do Projeto
@@ -347,7 +347,7 @@ export default function ProjectDetail() {
                         })
                       }
                     >
-                      Criar meu primeiro Funil
+                      <Plus size={16} className="mr-2" /> Novo Funil
                     </Button>
                   </div>
                 )}
@@ -368,9 +368,9 @@ export default function ProjectDetail() {
 
           <TabsContent
             value="tasks"
-            className="h-full m-0 flex flex-col border-none outline-none"
+            className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
           >
-            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+            <div className="flex flex-col flex-1 max-w-7xl mx-auto w-full">
               <div className="flex justify-between items-center mb-6 shrink-0">
                 <h3 className="text-lg font-semibold text-slate-800">
                   Tarefas
@@ -388,7 +388,7 @@ export default function ProjectDetail() {
                 </Button>
               </div>
               {projectTasks.length > 0 ? (
-                <div className="flex-1 overflow-hidden min-h-[600px] -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="flex-1 overflow-hidden min-h-[500px] -mx-4 px-4 sm:mx-0 sm:px-0">
                   <TasksBoard
                     tasks={projectTasks}
                     updateTask={updateTask}
@@ -416,7 +416,7 @@ export default function ProjectDetail() {
                       })
                     }
                   >
-                    Criar primeira Tarefa
+                    <Plus size={16} className="mr-2" /> Nova Tarefa
                   </Button>
                 </div>
               )}
@@ -425,9 +425,9 @@ export default function ProjectDetail() {
 
           <TabsContent
             value="documents"
-            className="h-full m-0 flex flex-col border-none outline-none"
+            className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
           >
-            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+            <div className="flex flex-col flex-1 max-w-7xl mx-auto w-full">
               <div className="flex justify-between items-center mb-6 shrink-0">
                 <h3 className="text-lg font-semibold text-slate-800">
                   Documentos
@@ -493,7 +493,7 @@ export default function ProjectDetail() {
                       })
                     }
                   >
-                    Criar Documento
+                    <Plus size={16} className="mr-2" /> Novo Documento
                   </Button>
                 </div>
               )}
@@ -502,9 +502,9 @@ export default function ProjectDetail() {
 
           <TabsContent
             value="assets"
-            className="h-full m-0 flex flex-col border-none outline-none"
+            className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
           >
-            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+            <div className="flex flex-col flex-1 max-w-7xl mx-auto w-full">
               <div className="flex justify-between items-center mb-6 shrink-0">
                 <h3 className="text-lg font-semibold text-slate-800">
                   Assets & Swipe
@@ -650,7 +650,7 @@ export default function ProjectDetail() {
                         })
                       }
                     >
-                      Salvar Inspiração
+                      <Bookmark size={16} className="mr-2" /> Salvar Inspiração
                     </Button>
                     <Button
                       onClick={() =>
@@ -661,7 +661,7 @@ export default function ProjectDetail() {
                         })
                       }
                     >
-                      Novo Asset
+                      <Plus size={16} className="mr-2" /> Novo Asset
                     </Button>
                   </div>
                 </div>
@@ -671,9 +671,9 @@ export default function ProjectDetail() {
 
           <TabsContent
             value="insights"
-            className="h-full m-0 flex flex-col border-none outline-none"
+            className="flex-1 m-0 data-[state=active]:flex flex-col border-none outline-none"
           >
-            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+            <div className="flex flex-col flex-1 max-w-7xl mx-auto w-full">
               <div className="flex justify-between items-center mb-6 shrink-0">
                 <h3 className="text-lg font-semibold text-slate-800">
                   Insights
@@ -757,7 +757,7 @@ export default function ProjectDetail() {
                       })
                     }
                   >
-                    Registrar Insight
+                    <Plus size={16} className="mr-2" /> Novo Insight
                   </Button>
                 </div>
               )}
