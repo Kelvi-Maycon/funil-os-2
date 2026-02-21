@@ -115,7 +115,7 @@ export default function Documents() {
               onDragStart={(e) => onDragStart(e, 'folder', folder.id)}
               onDrop={(e) => onDrop(e, folder.id)}
               onDragOver={onDragOver}
-              className="group flex items-center gap-1.5 py-1.5 pr-2 rounded-md text-sm transition-colors cursor-pointer hover:bg-accent text-foreground select-none"
+              className="group flex items-center gap-1.5 py-1.5 pr-2 rounded-lg text-sm transition-all cursor-pointer hover:bg-indigo-50/50 text-foreground select-none"
               style={{ paddingLeft: `${level * 16 + 8}px` }}
             >
               <button
@@ -123,7 +123,7 @@ export default function Documents() {
                   e.stopPropagation()
                   toggleFolder(folder.id)
                 }}
-                className="p-0.5 hover:bg-muted rounded text-muted-foreground shrink-0 transition-colors"
+                className="p-0.5 hover:bg-muted rounded transition-colors text-muted-foreground shrink-0"
               >
                 {folder.isExpanded ? (
                   <ChevronDown size={14} />
@@ -133,7 +133,7 @@ export default function Documents() {
               </button>
               <FolderIcon
                 size={14}
-                className="text-muted-foreground fill-muted-foreground/20 shrink-0"
+                className="text-indigo-500 fill-indigo-100 shrink-0"
               />
               <span className="truncate flex-1 font-medium">{folder.name}</span>
             </div>
@@ -146,14 +146,14 @@ export default function Documents() {
             draggable
             onDragStart={(e) => onDragStart(e, 'document', doc.id)}
             onClick={() => setActiveId(doc.id)}
-            className={`flex items-center gap-2 py-1.5 pr-2 rounded-md text-sm transition-colors w-full text-left cursor-grab active:cursor-grabbing select-none ${activeId === doc.id ? 'bg-primary/10 text-primary font-medium' : 'text-foreground hover:bg-accent'}`}
+            className={`flex items-center gap-2 py-1.5 pr-2 rounded-lg text-sm transition-all w-full text-left cursor-grab active:cursor-grabbing select-none ${activeId === doc.id ? 'bg-indigo-100/70 text-indigo-700 font-medium' : 'text-foreground hover:bg-indigo-50/50'}`}
             style={{
               paddingLeft: `${level * 16 + (parentId === null ? 8 : 30)}px`,
             }}
           >
             <FileText
               size={14}
-              className={`shrink-0 ${activeId === doc.id ? 'text-primary' : 'text-muted-foreground'}`}
+              className={`shrink-0 ${activeId === doc.id ? 'text-indigo-600' : 'text-muted-foreground'}`}
             />
             <span className="truncate flex-1">{doc.title}</span>
           </button>
@@ -164,21 +164,21 @@ export default function Documents() {
 
   return (
     <div className="flex h-full bg-background overflow-hidden animate-fade-in">
-      <div className="w-64 border-r bg-card flex flex-col shrink-0 z-10 shadow-sm">
-        <div className="p-4 border-b flex flex-col gap-2">
-          <Button className="w-full justify-start" onClick={createDoc}>
+      <div className="w-64 border-r border-border/50 bg-white flex flex-col shrink-0 z-10 shadow-sm">
+        <div className="p-4 border-b border-border/50 flex flex-col gap-2">
+          <Button className="w-full justify-start rounded-xl gradient-primary text-white border-0 shadow-sm shadow-indigo-500/20" onClick={createDoc}>
             <Plus size={16} className="mr-2" /> Novo Documento
           </Button>
           <Dialog open={newFolderOpen} onOpenChange={setNewFolderOpen}>
             <DialogTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full justify-start text-muted-foreground hover:text-foreground"
+                className="w-full justify-start text-muted-foreground hover:text-foreground rounded-xl border-border/50"
               >
                 <FolderPlus size={16} className="mr-2" /> Nova Pasta
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="rounded-2xl">
               <DialogHeader>
                 <DialogTitle>Criar Nova Pasta</DialogTitle>
               </DialogHeader>
@@ -188,8 +188,9 @@ export default function Documents() {
                   value={newFolderName}
                   onChange={(e) => setNewFolderName(e.target.value)}
                   autoFocus
+                  className="rounded-xl"
                 />
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full rounded-xl gradient-primary text-white border-0">
                   Criar Pasta
                 </Button>
               </form>
@@ -197,14 +198,14 @@ export default function Documents() {
           </Dialog>
         </div>
         <ScrollArea
-          className="flex-1"
+          className="flex-1 custom-scrollbar"
           onDrop={(e) => onDrop(e, null)}
           onDragOver={onDragOver}
         >
           <div className="p-2 min-h-full">{renderTree(null)}</div>
         </ScrollArea>
       </div>
-      <div className="flex-1 overflow-auto bg-card">
+      <div className="flex-1 overflow-auto bg-white custom-scrollbar">
         {activeDoc ? (
           <RichTextEditor
             doc={activeDoc}
@@ -229,9 +230,11 @@ export default function Documents() {
             }
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground flex-col gap-4">
-            <FileText size={48} className="text-muted/50" />
-            <span>Selecione um documento ou crie um novo.</span>
+          <div className="flex items-center justify-center h-full text-muted-foreground flex-col gap-4 animate-scale-in">
+            <div className="w-20 h-20 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl flex items-center justify-center shadow-sm">
+              <FileText size={32} className="text-indigo-400" />
+            </div>
+            <span className="text-sm">Selecione um documento ou crie um novo.</span>
           </div>
         )}
       </div>

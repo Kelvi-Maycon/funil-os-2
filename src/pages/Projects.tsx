@@ -90,10 +90,10 @@ export default function Projects() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Projetos</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">Projetos</h1>
           <FolderBreadcrumbs
             currentFolderId={currentFolderId}
             folders={moduleFolders}
@@ -106,11 +106,11 @@ export default function Projects() {
           <CreateFolderDialog onConfirm={handleCreateFolder} />
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="rounded-xl gradient-primary text-white border-0 shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 transition-all">
                 <Plus size={16} className="mr-2" /> Novo Projeto
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="rounded-2xl">
               <DialogHeader>
                 <DialogTitle>Criar Novo Projeto</DialogTitle>
               </DialogHeader>
@@ -120,8 +120,9 @@ export default function Projects() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   autoFocus
+                  className="rounded-xl"
                 />
-                <Button type="submit" className="w-full">
+                <Button type="submit" className="w-full rounded-xl gradient-primary text-white border-0">
                   Criar Projeto
                 </Button>
               </form>
@@ -139,29 +140,31 @@ export default function Projects() {
           placeholder="Buscar projetos..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-10 bg-white"
+          className="pl-10 bg-white rounded-xl border-border/50"
         />
       </div>
 
       {currentFolders.length === 0 && filteredProjects.length === 0 ? (
-        <div className="py-20 text-center flex flex-col items-center">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-            <FolderIcon size={32} className="text-muted-foreground" />
+        <div className="py-20 text-center flex flex-col items-center animate-scale-in">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+            <FolderIcon size={32} className="text-indigo-400" />
           </div>
-          <h3 className="text-lg font-medium">Vazio</h3>
+          <h3 className="text-lg font-semibold">Vazio</h3>
           <p className="text-muted-foreground mb-4">
             Crie um projeto ou uma pasta para começar.
           </p>
         </div>
       ) : view === 'grid' ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 stagger-children">
           {currentFolders.map((f) => (
             <Card
               key={f.id}
               onClick={() => setCurrentFolderId(f.id)}
-              className="hover:shadow-md transition-all cursor-pointer h-full group border-border hover:border-primary/50 flex items-center p-4 gap-3"
+              className="card-hover cursor-pointer h-full group border-0 shadow-sm flex items-center p-4 gap-3"
             >
-              <FolderIcon className="text-primary fill-primary/20" size={24} />
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                <FolderIcon className="text-indigo-500 fill-indigo-100" size={20} />
+              </div>
               <span className="font-semibold group-hover:text-primary transition-colors">
                 {f.name}
               </span>
@@ -171,8 +174,9 @@ export default function Projects() {
             <Card
               key={p.id}
               onClick={() => navigate(`/projetos/${p.id}`)}
-              className="hover:shadow-md transition-all cursor-pointer h-full group border-border hover:border-primary/50 flex flex-col"
+              className="card-hover cursor-pointer h-full group border-0 shadow-sm flex flex-col relative overflow-hidden"
             >
+              <div className="absolute top-0 left-0 right-0 h-1 gradient-primary opacity-0 group-hover:opacity-100 transition-opacity" />
               <CardHeader className="pb-3 flex-1">
                 <div className="flex justify-between items-start gap-2">
                   <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors line-clamp-1">
@@ -183,8 +187,10 @@ export default function Projects() {
                       variant={p.status === 'Ativo' ? 'default' : 'secondary'}
                       className={
                         p.status === 'Ativo'
-                          ? 'bg-green-500 hover:bg-green-600'
-                          : ''
+                          ? 'gradient-success border-0 text-white shadow-sm'
+                          : p.status === 'Pausado'
+                            ? 'bg-amber-100 text-amber-700 border-0'
+                            : ''
                       }
                     >
                       {p.status}
@@ -213,10 +219,10 @@ export default function Projects() {
           ))}
         </div>
       ) : (
-        <div className="bg-white border rounded-lg overflow-hidden">
+        <div className="bg-white border-0 rounded-xl overflow-hidden shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-border/50">
                 <TableHead>Nome</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Ações</TableHead>
@@ -227,11 +233,11 @@ export default function Projects() {
                 <TableRow
                   key={f.id}
                   onClick={() => setCurrentFolderId(f.id)}
-                  className="cursor-pointer group"
+                  className="cursor-pointer group hover:bg-indigo-50/50 transition-colors"
                 >
                   <TableCell className="font-medium flex items-center gap-2 py-4">
                     <FolderIcon
-                      className="text-primary fill-primary/20 group-hover:text-primary transition-colors"
+                      className="text-indigo-500 fill-indigo-100 group-hover:text-indigo-600 transition-colors"
                       size={16}
                     />
                     {f.name}
@@ -244,7 +250,7 @@ export default function Projects() {
                 <TableRow
                   key={p.id}
                   onClick={() => navigate(`/projetos/${p.id}`)}
-                  className="cursor-pointer"
+                  className="cursor-pointer hover:bg-indigo-50/50 transition-colors"
                 >
                   <TableCell className="font-medium py-4">{p.name}</TableCell>
                   <TableCell>
@@ -252,8 +258,10 @@ export default function Projects() {
                       variant={p.status === 'Ativo' ? 'default' : 'secondary'}
                       className={
                         p.status === 'Ativo'
-                          ? 'bg-green-500 hover:bg-green-600'
-                          : ''
+                          ? 'gradient-success border-0 text-white'
+                          : p.status === 'Pausado'
+                            ? 'bg-amber-100 text-amber-700 border-0'
+                            : ''
                       }
                     >
                       {p.status}

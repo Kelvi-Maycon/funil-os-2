@@ -80,10 +80,10 @@ export default function SwipeFile() {
   }
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold tracking-tight">Swipe File</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight">Swipe File</h1>
           <FolderBreadcrumbs
             currentFolderId={currentFolderId}
             folders={moduleFolders}
@@ -94,10 +94,13 @@ export default function SwipeFile() {
         <div className="flex items-center gap-2">
           <ViewToggle view={view} onChange={setView} />
           <CreateFolderDialog onConfirm={handleCreateFolder} />
-          <Button variant="outline">
+          <Button variant="outline" className="rounded-xl border-border/50">
             <Filter size={16} className="mr-2" /> Filtrar
           </Button>
-          <Button onClick={() => setAction({ type: 'swipe', mode: 'create' })}>
+          <Button
+            onClick={() => setAction({ type: 'swipe', mode: 'create' })}
+            className="rounded-xl gradient-primary text-white border-0 shadow-lg shadow-indigo-500/20 hover:shadow-xl transition-all"
+          >
             Salvar Inspiração
           </Button>
         </div>
@@ -109,7 +112,7 @@ export default function SwipeFile() {
           size={18}
         />
         <Input
-          className="pl-10 bg-white"
+          className="pl-10 bg-white rounded-xl border-border/50"
           placeholder="Buscar inspirações..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -117,11 +120,11 @@ export default function SwipeFile() {
       </div>
 
       {currentFolders.length === 0 && filteredSwipes.length === 0 ? (
-        <div className="py-20 text-center flex flex-col items-center">
-          <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-            <ImageIcon size={32} className="text-muted-foreground" />
+        <div className="py-20 text-center flex flex-col items-center animate-scale-in">
+          <div className="w-20 h-20 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-2xl flex items-center justify-center mb-4 shadow-sm">
+            <ImageIcon size={32} className="text-indigo-400" />
           </div>
-          <h3 className="text-lg font-medium">Vazio</h3>
+          <h3 className="text-lg font-semibold">Vazio</h3>
           <p className="text-muted-foreground mb-4">
             Adicione uma inspiração ou crie uma pasta.
           </p>
@@ -129,17 +132,19 @@ export default function SwipeFile() {
       ) : view === 'grid' ? (
         <>
           {currentFolders.length > 0 && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6 stagger-children">
               {currentFolders.map((f) => (
                 <Card
                   key={f.id}
                   onClick={() => setCurrentFolderId(f.id)}
-                  className="hover:shadow-md transition-all cursor-pointer group border-border hover:border-primary/50 flex items-center p-4 gap-3"
+                  className="card-hover cursor-pointer group border-0 shadow-sm flex items-center p-4 gap-3"
                 >
-                  <FolderIcon
-                    className="text-primary fill-primary/20"
-                    size={24}
-                  />
+                  <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                    <FolderIcon
+                      className="text-indigo-500 fill-indigo-100"
+                      size={20}
+                    />
+                  </div>
                   <span className="font-semibold group-hover:text-primary transition-colors">
                     {f.name}
                   </span>
@@ -147,11 +152,11 @@ export default function SwipeFile() {
               ))}
             </div>
           )}
-          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
+          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-5 space-y-5">
             {filteredSwipes.map((s) => (
               <div
                 key={s.id}
-                className="break-inside-avoid relative group rounded-xl overflow-hidden shadow-sm border border-border bg-card cursor-pointer"
+                className="break-inside-avoid relative group rounded-2xl overflow-hidden shadow-sm border-0 bg-card cursor-pointer card-hover"
                 onClick={() =>
                   setAction({ type: 'swipe', mode: 'edit', itemId: s.id })
                 }
@@ -170,7 +175,7 @@ export default function SwipeFile() {
                   />
                 </div>
                 <Star
-                  className={`absolute top-3 right-3 drop-shadow-md z-10 transition-opacity ${s.isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-white/60 opacity-0 group-hover:opacity-100'}`}
+                  className={`absolute top-3 right-3 drop-shadow-md z-10 transition-all cursor-pointer ${s.isFavorite ? 'text-yellow-400 fill-yellow-400 scale-110' : 'text-white/60 opacity-0 group-hover:opacity-100'}`}
                   size={20}
                   onClick={(e) => toggleFavorite(e, s.id)}
                 />
@@ -180,7 +185,7 @@ export default function SwipeFile() {
                   className="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end pointer-events-none">
-                  <h3 className="text-white font-medium">{s.title}</h3>
+                  <h3 className="text-white font-semibold">{s.title}</h3>
                   <p className="text-white/80 text-sm">{s.category}</p>
                 </div>
               </div>
@@ -188,10 +193,10 @@ export default function SwipeFile() {
           </div>
         </>
       ) : (
-        <div className="bg-white border rounded-lg overflow-hidden">
+        <div className="bg-white border-0 rounded-xl overflow-hidden shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-border/50">
                 <TableHead>Preview</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Categoria</TableHead>
@@ -203,12 +208,12 @@ export default function SwipeFile() {
                 <TableRow
                   key={f.id}
                   onClick={() => setCurrentFolderId(f.id)}
-                  className="cursor-pointer group"
+                  className="cursor-pointer group hover:bg-indigo-50/50 transition-colors"
                 >
                   <TableCell className="w-16">
-                    <div className="w-10 h-10 flex items-center justify-center bg-muted rounded">
+                    <div className="w-10 h-10 flex items-center justify-center bg-indigo-50 rounded-lg">
                       <FolderIcon
-                        className="text-primary fill-primary/20 group-hover:text-primary transition-colors"
+                        className="text-indigo-500 fill-indigo-100"
                         size={20}
                       />
                     </div>
@@ -221,7 +226,7 @@ export default function SwipeFile() {
               {filteredSwipes.map((s) => (
                 <TableRow
                   key={s.id}
-                  className="cursor-pointer hover:bg-muted/50"
+                  className="cursor-pointer hover:bg-indigo-50/50 transition-colors"
                   onClick={() =>
                     setAction({ type: 'swipe', mode: 'edit', itemId: s.id })
                   }
@@ -230,14 +235,14 @@ export default function SwipeFile() {
                     <img
                       src={s.imageUrl}
                       alt={s.title}
-                      className="w-10 h-10 object-cover rounded border"
+                      className="w-10 h-10 object-cover rounded-lg border"
                     />
                   </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2 py-2">
                       {s.title}{' '}
                       <Star
-                        className={`transition-colors ${s.isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'}`}
+                        className={`transition-colors cursor-pointer ${s.isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'}`}
                         size={14}
                         onClick={(e) => toggleFavorite(e, s.id)}
                       />
@@ -249,6 +254,7 @@ export default function SwipeFile() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="rounded-lg"
                         onClick={() =>
                           setAction({
                             type: 'swipe',

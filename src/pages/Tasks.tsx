@@ -21,9 +21,12 @@ export default function Tasks() {
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto h-full flex flex-col animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 shrink-0">
-        <h1 className="text-3xl font-bold tracking-tight">Tarefas</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">Tarefas</h1>
         <div className="flex items-center gap-2">
-          <Button onClick={() => setAction({ type: 'task', mode: 'create' })}>
+          <Button
+            onClick={() => setAction({ type: 'task', mode: 'create' })}
+            className="rounded-xl gradient-primary text-white border-0 shadow-lg shadow-indigo-500/20 hover:shadow-xl hover:shadow-indigo-500/30 transition-all"
+          >
             <Plus size={16} className="mr-2" /> Nova Tarefa
           </Button>
         </div>
@@ -33,13 +36,13 @@ export default function Tasks() {
         <TabsList className="bg-transparent gap-2 h-auto p-0 mb-6 flex-wrap shrink-0 justify-start">
           <TabsTrigger
             value="overview"
-            className="rounded-full px-5 py-2.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-slate-200 transition-all"
+            className="rounded-xl px-5 py-2.5 text-muted-foreground hover:text-foreground hover:bg-white data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-border/50 transition-all"
           >
             <LayoutList className="w-4 h-4 mr-2" /> Overview
           </TabsTrigger>
           <TabsTrigger
             value="board"
-            className="rounded-full px-5 py-2.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-slate-200 transition-all"
+            className="rounded-xl px-5 py-2.5 text-muted-foreground hover:text-foreground hover:bg-white data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-border/50 transition-all"
           >
             <LayoutGrid className="w-4 h-4 mr-2" /> Quadro
           </TabsTrigger>
