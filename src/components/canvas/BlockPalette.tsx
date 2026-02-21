@@ -7,14 +7,7 @@ import {
   HandHeart,
   CheckCircle,
   FileText,
-  BellRing,
   MessageSquare,
-  Smartphone,
-  UserPlus,
-  Send,
-  RefreshCw,
-  Edit3,
-  Globe,
   Clock,
 } from 'lucide-react'
 
@@ -23,20 +16,10 @@ const blockGroups = [
     title: 'MESSAGES',
     items: [
       { type: 'Email', label: 'Email', icon: Mail },
-      { type: 'InApp', label: 'In-App Message', icon: Smartphone },
-      { type: 'Push', label: 'Push Notification', icon: BellRing },
-      { type: 'Slack', label: 'Slack Message', icon: MessageSquare },
-      { type: 'SMS', label: 'Twilio SMS', icon: MessageCircle },
-    ],
-  },
-  {
-    title: 'DATA',
-    items: [
-      { type: 'CreatePerson', label: 'Create Person', icon: UserPlus },
-      { type: 'SendEvent', label: 'Send Event', icon: Send },
-      { type: 'BatchUpdate', label: 'Batch Update', icon: RefreshCw },
-      { type: 'ManualUpdate', label: 'Manual Update', icon: Edit3 },
-      { type: 'DataSync', label: 'Send & Receive Data', icon: Globe },
+      { type: 'Slack', label: 'Slack', icon: MessageSquare },
+      { type: 'SMS', label: 'SMS', icon: MessageCircle },
+      { type: 'WATI', label: 'WATI (WhatsApp)', icon: MessageCircle },
+      { type: 'ManyChat', label: 'ManyChat (WhatsApp)', icon: MessageCircle },
     ],
   },
   {
