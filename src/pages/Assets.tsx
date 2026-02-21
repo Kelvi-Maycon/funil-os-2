@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import useAssetStore from '@/stores/useAssetStore'
 import useFolderStore from '@/stores/useFolderStore'
+import useQuickActionStore from '@/stores/useQuickActionStore'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ import {
   Plus,
   Image as ImageIcon,
   Folder as FolderIcon,
+  Pencil,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -30,6 +32,7 @@ import {
 export default function Assets() {
   const [assets, setAssets] = useAssetStore()
   const [allFolders, setFolders] = useFolderStore()
+  const [, setAction] = useQuickActionStore()
   const [search, setSearch] = useState('')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
@@ -81,7 +84,7 @@ export default function Assets() {
         <div className="flex items-center gap-2">
           <ViewToggle view={view} onChange={setView} />
           <CreateFolderDialog onConfirm={handleCreateFolder} />
-          <Button>
+          <Button onClick={() => setAction({ type: 'asset', mode: 'create' })}>
             <Plus className="mr-2" size={16} /> Novo Asset
           </Button>
         </div>
@@ -127,7 +130,10 @@ export default function Assets() {
           {filteredAssets.map((asset) => (
             <Card
               key={asset.id}
-              className="overflow-hidden hover:shadow-lg transition-all group border-border relative"
+              className="overflow-hidden hover:shadow-lg transition-all group border-border relative cursor-pointer"
+              onClick={() =>
+                setAction({ type: 'asset', mode: 'edit', itemId: asset.id })
+              }
             >
               <div className="aspect-square bg-muted relative">
                 <img
@@ -136,8 +142,12 @@ export default function Assets() {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] gap-2">
-                  <Button variant="secondary" size="sm">
-                    Visualizar
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="pointer-events-none"
+                  >
+                    Editar
                   </Button>
                   <div
                     onClick={(e) => {
@@ -158,7 +168,7 @@ export default function Assets() {
                   {asset.name}
                 </h3>
                 <div className="flex gap-1 mt-2 flex-wrap">
-                  {asset.tags.map((tag) => (
+                  {asset.tags?.map((tag) => (
                     <Badge
                       key={tag}
                       variant="secondary"
@@ -167,6 +177,12 @@ export default function Assets() {
                       {tag}
                     </Badge>
                   ))}
+                  <Badge
+                    variant="secondary"
+                    className="text-[10px] px-1.5 py-0 font-normal"
+                  >
+                    {asset.category}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
@@ -204,7 +220,13 @@ export default function Assets() {
                 </TableRow>
               ))}
               {filteredAssets.map((a) => (
-                <TableRow key={a.id}>
+                <TableRow
+                  key={a.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() =>
+                    setAction({ type: 'asset', mode: 'edit', itemId: a.id })
+                  }
+                >
                   <TableCell className="w-16">
                     <img
                       src={a.url}
@@ -214,12 +236,27 @@ export default function Assets() {
                   </TableCell>
                   <TableCell className="font-medium">{a.name}</TableCell>
                   <TableCell>{a.category}</TableCell>
-                  <TableCell>
-                    <MoveDialog
-                      folders={moduleFolders}
-                      currentFolderId={a.folderId}
-                      onMove={(id) => updateAssetFolder(a.id, id)}
-                    />
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          setAction({
+                            type: 'asset',
+                            mode: 'edit',
+                            itemId: a.id,
+                          })
+                        }
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <MoveDialog
+                        folders={moduleFolders}
+                        currentFolderId={a.folderId}
+                        onMove={(id) => updateAssetFolder(a.id, id)}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

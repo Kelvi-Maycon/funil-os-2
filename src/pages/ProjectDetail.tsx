@@ -5,6 +5,7 @@ import useFunnelStore from '@/stores/useFunnelStore'
 import useTaskStore from '@/stores/useTaskStore'
 import useDocumentStore from '@/stores/useDocumentStore'
 import useAssetStore from '@/stores/useAssetStore'
+import useQuickActionStore from '@/stores/useQuickActionStore'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -71,6 +72,7 @@ export default function ProjectDetail() {
   const [tasks, setTasks] = useTaskStore()
   const [docs] = useDocumentStore()
   const [assets] = useAssetStore()
+  const [, setAction] = useQuickActionStore()
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [selectedFunnelId, setSelectedFunnelId] = useState<string | null>(null)
@@ -434,20 +436,13 @@ export default function ProjectDetail() {
                         Funis do Projeto
                       </h3>
                       <Button
-                        onClick={() => {
-                          const newFunnel: Funnel = {
-                            id: `f_${Date.now()}`,
-                            projectId: project.id,
-                            folderId: null,
-                            name: 'Novo Funil',
-                            status: 'Rascunho',
-                            createdAt: new Date().toISOString(),
-                            nodes: [],
-                            edges: [],
-                          }
-                          setFunnels([...funnels, newFunnel])
-                          setSelectedFunnelId(newFunnel.id)
-                        }}
+                        onClick={() =>
+                          setAction({
+                            type: 'canvas',
+                            mode: 'create',
+                            defaultProjectId: project.id,
+                          })
+                        }
                       >
                         <Plus size={16} className="mr-2" /> Novo Funil
                       </Button>
@@ -538,7 +533,15 @@ export default function ProjectDetail() {
               >
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold">Documentos</h3>
-                  <Button onClick={() => navigate('/documentos')}>
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'document',
+                        mode: 'create',
+                        defaultProjectId: project.id,
+                      })
+                    }
+                  >
                     <Plus size={16} className="mr-2" /> Novo Documento
                   </Button>
                 </div>
@@ -551,8 +554,8 @@ export default function ProjectDetail() {
                         onClick={() => navigate('/documentos')}
                       >
                         <CardHeader className="p-5 pb-3">
-                          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500 mb-3 group-hover:scale-110 transition-transform">
-                            <FileText size={20} />
+                          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-50 mb-3 group-hover:scale-110 transition-transform">
+                            <FileText size={20} className="text-blue-500" />
                           </div>
                           <CardTitle className="text-base font-semibold text-slate-800 line-clamp-1">
                             {d.title}
@@ -594,7 +597,15 @@ export default function ProjectDetail() {
               >
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold">Quadro de Tarefas</h3>
-                  <Button>
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'task',
+                        mode: 'create',
+                        defaultProjectId: project.id,
+                      })
+                    }
+                  >
                     <Plus size={16} className="mr-2" /> Nova Tarefa
                   </Button>
                 </div>
@@ -613,7 +624,15 @@ export default function ProjectDetail() {
               >
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-semibold">Assets & Swipe File</h3>
-                  <Button onClick={() => navigate('/assets')}>
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'asset',
+                        mode: 'create',
+                        defaultProjectId: project.id,
+                      })
+                    }
+                  >
                     <Plus size={16} className="mr-2" /> Adicionar Asset
                   </Button>
                 </div>
@@ -623,8 +642,15 @@ export default function ProjectDetail() {
                       <Card
                         key={asset.id}
                         className="overflow-hidden hover:shadow-lg transition-all group border-slate-200"
+                        onClick={() =>
+                          setAction({
+                            type: 'asset',
+                            mode: 'edit',
+                            itemId: asset.id,
+                          })
+                        }
                       >
-                        <div className="aspect-square bg-slate-100 relative">
+                        <div className="aspect-square bg-slate-100 relative cursor-pointer">
                           <img
                             src={asset.url}
                             alt={asset.name}
@@ -636,7 +662,7 @@ export default function ProjectDetail() {
                               size="sm"
                               className="bg-white/90 hover:bg-white text-slate-900 pointer-events-none"
                             >
-                              Visualizar
+                              Editar
                             </Button>
                           </div>
                         </div>

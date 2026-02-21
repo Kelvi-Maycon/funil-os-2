@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react'
 import useFunnelStore from '@/stores/useFunnelStore'
 import useFunnelFolderStore from '@/stores/useFunnelFolderStore'
 import useProjectStore from '@/stores/useProjectStore'
+import useQuickActionStore from '@/stores/useQuickActionStore'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -28,7 +29,6 @@ import {
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Plus, LayoutGrid, List, FolderPlus, Home } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { useNavigate } from 'react-router-dom'
 import FunnelGrid from '@/components/funnels/FunnelGrid'
 import FunnelList from '@/components/funnels/FunnelList'
 
@@ -36,7 +36,7 @@ export default function Funnels() {
   const [funnels, setFunnels] = useFunnelStore()
   const [folders, setFolders] = useFunnelFolderStore()
   const [projects] = useProjectStore()
-  const navigate = useNavigate()
+  const [, setAction] = useQuickActionStore()
   const { toast } = useToast()
 
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
@@ -81,19 +81,7 @@ export default function Funnels() {
   }, [currentFolderId, folders])
 
   const handleCreateFunnel = () => {
-    const newFunnel = {
-      id: `f_${Date.now()}`,
-      projectId: projects[0]?.id || '',
-      folderId: currentFolderId,
-      name: 'Novo Funil',
-      status: 'Rascunho' as const,
-      createdAt: new Date().toISOString(),
-      nodes: [],
-      edges: [],
-    }
-    setFunnels([...funnels, newFunnel])
-    toast({ title: 'Funil criado!' })
-    navigate(`/canvas/${newFunnel.id}`)
+    setAction({ type: 'canvas', mode: 'create' })
   }
 
   const handleCreateFolder = (e: React.FormEvent) => {
@@ -111,22 +99,27 @@ export default function Funnels() {
     toast({ title: 'Pasta criada!' })
   }
 
-  const handleRename = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!renameItem || !renameItem.name.trim()) return
-    if (renameItem.type === 'folder') {
-      setFolders(
-        folders.map((f) =>
-          f.id === renameItem.id ? { ...f, name: renameItem.name } : f,
-        ),
-      )
+  const handleEditItem = (item: {
+    id: string
+    type: 'folder' | 'funnel'
+    name: string
+  }) => {
+    if (item.type === 'folder') {
+      setRenameItem(item)
     } else {
-      setFunnels(
-        funnels.map((f) =>
-          f.id === renameItem.id ? { ...f, name: renameItem.name } : f,
-        ),
-      )
+      setAction({ type: 'canvas', mode: 'edit', itemId: item.id })
     }
+  }
+
+  const handleRenameFolder = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!renameItem || !renameItem.name.trim() || renameItem.type !== 'folder')
+      return
+    setFolders(
+      folders.map((f) =>
+        f.id === renameItem.id ? { ...f, name: renameItem.name } : f,
+      ),
+    )
     setRenameItem(null)
     toast({ title: 'Renomeado com sucesso!' })
   }
@@ -296,7 +289,7 @@ export default function Funnels() {
           folders={currentFolders}
           funnels={currentFunnels}
           onOpenFolder={setCurrentFolderId}
-          onRename={setRenameItem}
+          onRename={handleEditItem}
           onMove={handleOpenMove}
           onDelete={handleDelete}
         />
@@ -305,7 +298,7 @@ export default function Funnels() {
           folders={currentFolders}
           funnels={currentFunnels}
           onOpenFolder={setCurrentFolderId}
-          onRename={setRenameItem}
+          onRename={handleEditItem}
           onMove={handleOpenMove}
           onDelete={handleDelete}
         />
@@ -336,11 +329,9 @@ export default function Funnels() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Renomear {renameItem?.type === 'folder' ? 'Pasta' : 'Funil'}
-            </DialogTitle>
+            <DialogTitle>Renomear Pasta</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleRename} className="space-y-4 pt-4">
+          <form onSubmit={handleRenameFolder} className="space-y-4 pt-4">
             <Input
               placeholder="Novo nome"
               value={renameItem?.name || ''}

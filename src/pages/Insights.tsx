@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import useInsightStore from '@/stores/useInsightStore'
 import useFolderStore from '@/stores/useFolderStore'
+import useQuickActionStore from '@/stores/useQuickActionStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ import {
 export default function Insights() {
   const [insights, setInsights] = useInsightStore()
   const [allFolders, setFolders] = useFolderStore()
+  const [, setAction] = useQuickActionStore()
   const [search, setSearch] = useState('')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
@@ -73,6 +75,14 @@ export default function Insights() {
     toast({ title: 'Insight movido com sucesso!' })
   }
 
+  const togglePin = (e: React.MouseEvent, id: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setInsights(
+      insights.map((i) => (i.id === id ? { ...i, isPinned: !i.isPinned } : i)),
+    )
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -88,7 +98,9 @@ export default function Insights() {
         <div className="flex items-center gap-2">
           <ViewToggle view={view} onChange={setView} />
           <CreateFolderDialog onConfirm={handleCreateFolder} />
-          <Button>
+          <Button
+            onClick={() => setAction({ type: 'insight', mode: 'create' })}
+          >
             <Plus size={16} className="mr-2" /> Novo Insight
           </Button>
         </div>
@@ -134,18 +146,23 @@ export default function Insights() {
           {filteredInsights.map((i) => (
             <Card
               key={i.id}
-              className="relative hover:shadow-md transition-shadow group border-border flex flex-col"
+              className="relative hover:shadow-md transition-shadow group border-border flex flex-col cursor-pointer"
+              onClick={() =>
+                setAction({ type: 'insight', mode: 'edit', itemId: i.id })
+              }
             >
               {i.isPinned && (
                 <Pin
-                  className="absolute top-4 right-4 text-primary fill-primary"
+                  className="absolute top-4 right-4 text-primary fill-primary z-10"
                   size={16}
+                  onClick={(e) => togglePin(e, i.id)}
                 />
               )}
               {!i.isPinned && (
                 <Pin
-                  className="absolute top-4 right-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute top-4 right-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity z-10"
                   size={16}
+                  onClick={(e) => togglePin(e, i.id)}
                 />
               )}
               <CardHeader className="pb-2 pr-12">
@@ -222,7 +239,13 @@ export default function Insights() {
                 </TableRow>
               ))}
               {filteredInsights.map((i) => (
-                <TableRow key={i.id}>
+                <TableRow
+                  key={i.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() =>
+                    setAction({ type: 'insight', mode: 'edit', itemId: i.id })
+                  }
+                >
                   <TableCell className="font-medium py-4">
                     <div className="flex items-center gap-2">
                       {i.title}
@@ -242,7 +265,7 @@ export default function Insights() {
                   <TableCell>
                     <Badge variant="outline">{i.status}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <MoveDialog
                       folders={moduleFolders}
                       currentFolderId={i.folderId}

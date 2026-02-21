@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import useDocumentStore from '@/stores/useDocumentStore'
 import useFolderStore from '@/stores/useFolderStore'
+import useQuickActionStore from '@/stores/useQuickActionStore'
 import RichTextEditor from '@/components/editor/RichTextEditor'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,6 +25,7 @@ import { Input } from '@/components/ui/input'
 export default function Documents() {
   const [docs, setDocs] = useDocumentStore()
   const [folders, setFolders] = useFolderStore()
+  const [, setAction] = useQuickActionStore()
   const [activeId, setActiveId] = useState(docs[0]?.id)
   const [newFolderOpen, setNewFolderOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState('')
@@ -31,16 +33,7 @@ export default function Documents() {
   const activeDoc = docs.find((d) => d.id === activeId)
 
   const createDoc = () => {
-    const newDoc = {
-      id: `d_${Date.now()}`,
-      projectId: 'p1',
-      title: 'Novo Documento',
-      content: '',
-      updatedAt: new Date().toISOString(),
-      folderId: null,
-    }
-    setDocs([...docs, newDoc])
-    setActiveId(newDoc.id)
+    setAction({ type: 'document', mode: 'create' })
   }
 
   const createFolder = (e: React.FormEvent) => {
@@ -49,6 +42,7 @@ export default function Documents() {
     const newFolder = {
       id: `f_${Date.now()}`,
       projectId: 'p1',
+      module: 'project' as const,
       name: newFolderName,
       parentId: null,
       createdAt: new Date().toISOString(),
@@ -217,6 +211,13 @@ export default function Documents() {
             onTitleChange={(title) =>
               setDocs(
                 docs.map((d) => (d.id === activeDoc.id ? { ...d, title } : d)),
+              )
+            }
+            onProjectChange={(projectId) =>
+              setDocs(
+                docs.map((d) =>
+                  d.id === activeDoc.id ? { ...d, projectId } : d,
+                ),
               )
             }
             onChange={(content) =>

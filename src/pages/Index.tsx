@@ -3,30 +3,91 @@ import useProjectStore from '@/stores/useProjectStore'
 import useTaskStore from '@/stores/useTaskStore'
 import useFunnelStore from '@/stores/useFunnelStore'
 import useInsightStore from '@/stores/useInsightStore'
+import useQuickActionStore from '@/stores/useQuickActionStore'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { CheckCircle2, Clock, Target, CheckSquare, Layers } from 'lucide-react'
+import {
+  CheckCircle2,
+  Clock,
+  Target,
+  CheckSquare,
+  Layers,
+  Plus,
+} from 'lucide-react'
 
 export default function Index() {
   const [projects] = useProjectStore()
   const [tasks] = useTaskStore()
   const [funnels] = useFunnelStore()
   const [insights] = useInsightStore()
+  const [, setAction] = useQuickActionStore()
 
   const activeProjects = projects.filter((p) => p.status === 'Ativo').length
   const pendingTasks = tasks.filter((t) => t.status !== 'Concluído')
   const completedToday = tasks.filter((t) => t.status === 'Concluído').length
+  const activeFunnels = funnels.filter(
+    (f) => f.status === 'Ativo' || f.status === 'Em Progresso',
+  ).length
   const recentInsights = insights.slice(0, 3)
 
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-fade-in">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold tracking-tight">Bom dia, João</h1>
-        <p className="text-muted-foreground capitalize">
-          {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Bom dia, João</h1>
+          <p className="text-muted-foreground capitalize">
+            {format(new Date(), "EEEE, d 'de' MMMM", { locale: ptBR })}
+          </p>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="rounded-xl shadow-md hover:shadow-lg transition-all">
+              <Plus className="mr-2" size={16} /> Quick Action
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem
+              onClick={() => setAction({ type: 'canvas', mode: 'create' })}
+            >
+              Novo Canvas
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setAction({ type: 'task', mode: 'create' })}
+            >
+              Nova Tarefa
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setAction({ type: 'document', mode: 'create' })}
+            >
+              Novo Documento
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setAction({ type: 'asset', mode: 'create' })}
+            >
+              Novo Asset
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setAction({ type: 'insight', mode: 'create' })}
+            >
+              Novo Insight
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => setAction({ type: 'swipe', mode: 'create' })}
+            >
+              Nova Inspiração
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -44,12 +105,12 @@ export default function Index() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total de Funis
+              Funis em Progresso
             </CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{funnels.length}</div>
+            <div className="text-2xl font-bold">{activeFunnels}</div>
           </CardContent>
         </Card>
         <Card>

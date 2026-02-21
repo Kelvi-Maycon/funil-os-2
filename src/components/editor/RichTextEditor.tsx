@@ -22,7 +22,15 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import useFunnelStore from '@/stores/useFunnelStore'
+import useProjectStore from '@/stores/useProjectStore'
 import CanvasBoard from '@/components/canvas/CanvasBoard'
 import { cn } from '@/lib/utils'
 
@@ -132,13 +140,16 @@ export default function RichTextEditor({
   doc,
   onChange,
   onTitleChange,
+  onProjectChange,
 }: {
   doc: Document
   onChange: (c: string) => void
   onTitleChange: (t: string) => void
+  onProjectChange: (p: string | null) => void
 }) {
   const editorRef = useRef<HTMLDivElement>(null)
   const [funnels, setFunnels] = useFunnelStore()
+  const [projects] = useProjectStore()
   const [canvasModalOpen, setCanvasModalOpen] = useState(false)
   const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null)
   const [imageModalOpen, setImageModalOpen] = useState(false)
@@ -344,13 +355,36 @@ export default function RichTextEditor({
             editingCanvasId ? 'p-6 max-w-3xl' : 'p-8 max-w-4xl',
           )}
         >
-          <input
-            value={doc.title}
-            onChange={(e) => onTitleChange(e.target.value)}
-            className="text-4xl font-bold border-none outline-none focus:ring-0 mb-8 bg-transparent text-foreground placeholder:text-muted-foreground shrink-0"
-            placeholder="Título do Documento"
-          />
-          <div className="flex items-center gap-1 mb-6 border-b pb-4 sticky top-0 bg-background/95 backdrop-blur z-10 shrink-0">
+          <div className="flex items-center gap-4 mb-6 border-b pb-4 sticky top-0 bg-background/95 backdrop-blur z-10 shrink-0">
+            <Input
+              value={doc.title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              className="text-2xl font-bold border-none outline-none focus-visible:ring-0 px-0 h-auto shadow-none bg-transparent"
+              placeholder="Título do Documento"
+            />
+            <div className="ml-auto flex flex-col sm:flex-row items-end sm:items-center gap-2">
+              <Select
+                value={doc.projectId || 'none'}
+                onValueChange={(val) =>
+                  onProjectChange(val === 'none' ? null : val)
+                }
+              >
+                <SelectTrigger className="w-[180px] h-8 bg-transparent">
+                  <SelectValue placeholder="Project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Nenhum Projeto</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 mb-6 shrink-0 flex-wrap">
             <Button
               variant="ghost"
               size="icon"

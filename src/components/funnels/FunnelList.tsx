@@ -42,8 +42,8 @@ export default function FunnelList({
 }: Props) {
   const [projects] = useProjectStore()
   const navigate = useNavigate()
-  const getProjectName = (id: string) =>
-    projects.find((p) => p.id === id)?.name || 'Sem Projeto'
+  const getProjectName = (id?: string | null) =>
+    projects.find((p) => p.id === id)?.name || 'Nenhum Projeto'
 
   if (folders.length === 0 && funnels.length === 0) {
     return (
@@ -78,7 +78,7 @@ export default function FunnelList({
             onRename({ id: item.id, type, name: item.name })
           }}
         >
-          Renomear
+          {type === 'folder' ? 'Renomear' : 'Editar'}
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {

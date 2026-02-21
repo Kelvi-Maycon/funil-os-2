@@ -31,7 +31,7 @@ export type FunnelFolder = {
 }
 export type Funnel = {
   id: string
-  projectId: string
+  projectId?: string | null
   folderId?: string | null
   name: string
   status: 'Rascunho' | 'Ativo' | 'Pausado' | 'Concluído'
@@ -54,7 +54,7 @@ export type Comment = {
 export type Task = {
   id: string
   title: string
-  projectId: string
+  projectId?: string | null
   funnelId?: string
   blockId?: string
   priority: 'Baixa' | 'Média' | 'Alta'
@@ -69,7 +69,7 @@ export type Task = {
 }
 export type Folder = {
   id: string
-  projectId?: string
+  projectId?: string | null
   module: 'project' | 'asset' | 'swipe' | 'insight' | 'funnel'
   name: string
   parentId: string | null
@@ -78,7 +78,7 @@ export type Folder = {
 }
 export type Document = {
   id: string
-  projectId: string
+  projectId?: string | null
   title: string
   content: string
   updatedAt: string
@@ -86,7 +86,7 @@ export type Document = {
 }
 export type Asset = {
   id: string
-  projectId: string
+  projectId?: string | null
   name: string
   url: string
   type: 'image' | 'pdf' | 'link'
@@ -96,6 +96,7 @@ export type Asset = {
 }
 export type Insight = {
   id: string
+  projectId?: string | null
   title: string
   content: string
   type: string
@@ -106,6 +107,7 @@ export type Insight = {
 }
 export type Swipe = {
   id: string
+  projectId?: string | null
   title: string
   imageUrl: string
   category: string

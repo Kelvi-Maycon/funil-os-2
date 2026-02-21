@@ -27,6 +27,7 @@ import {
   ChevronsLeft,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import QuickActionModal from '@/components/QuickActionModal'
 
 const navItems = [
   { title: 'Dashboard', icon: LayoutDashboard, url: '/' },
@@ -127,6 +128,7 @@ export default function Layout() {
           <Outlet />
         </main>
       </SidebarInset>
+      <QuickActionModal />
     </SidebarProvider>
   )
 }

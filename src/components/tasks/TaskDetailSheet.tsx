@@ -26,8 +26,10 @@ import {
   AlignLeft,
   CheckSquare,
   MessageSquare,
+  Folder,
 } from 'lucide-react'
 import { format } from 'date-fns'
+import useProjectStore from '@/stores/useProjectStore'
 
 export default function TaskDetailSheet({
   task,
@@ -39,6 +41,7 @@ export default function TaskDetailSheet({
   onUpdate: (id: string, updates: Partial<Task>) => void
 }) {
   const [localTask, setLocalTask] = useState<Task | null>(null)
+  const [projects] = useProjectStore()
 
   useEffect(() => {
     if (task) setLocalTask(task)
@@ -179,6 +182,30 @@ export default function TaskDetailSheet({
                   <SelectItem value="Baixa">Low</SelectItem>
                   <SelectItem value="Média">Medium</SelectItem>
                   <SelectItem value="Alta">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1 col-span-2 mt-2">
+              <label className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                <Folder size={14} /> Project
+              </label>
+              <Select
+                value={localTask.projectId || 'none'}
+                onValueChange={(val: any) =>
+                  handleUpdate({ projectId: val === 'none' ? null : val })
+                }
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue placeholder="Assign to Project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None (Draft)</SelectItem>
+                  {projects.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

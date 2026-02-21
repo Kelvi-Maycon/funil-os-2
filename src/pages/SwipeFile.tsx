@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import useSwipeStore from '@/stores/useSwipeStore'
 import useFolderStore from '@/stores/useFolderStore'
+import useQuickActionStore from '@/stores/useQuickActionStore'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ import {
   Folder as FolderIcon,
   Search,
   Image as ImageIcon,
+  Pencil,
 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -30,6 +32,7 @@ import {
 export default function SwipeFile() {
   const [swipes, setSwipes] = useSwipeStore()
   const [allFolders, setFolders] = useFolderStore()
+  const [, setAction] = useQuickActionStore()
   const [search, setSearch] = useState('')
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null)
@@ -66,6 +69,16 @@ export default function SwipeFile() {
     toast({ title: 'Inspiração movida com sucesso!' })
   }
 
+  const toggleFavorite = (e: React.MouseEvent, id: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setSwipes(
+      swipes.map((s) =>
+        s.id === id ? { ...s, isFavorite: !s.isFavorite } : s,
+      ),
+    )
+  }
+
   return (
     <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -84,7 +97,9 @@ export default function SwipeFile() {
           <Button variant="outline">
             <Filter size={16} className="mr-2" /> Filtrar
           </Button>
-          <Button>Salvar Inspiração</Button>
+          <Button onClick={() => setAction({ type: 'swipe', mode: 'create' })}>
+            Salvar Inspiração
+          </Button>
         </div>
       </div>
 
@@ -136,7 +151,10 @@ export default function SwipeFile() {
             {filteredSwipes.map((s) => (
               <div
                 key={s.id}
-                className="break-inside-avoid relative group rounded-xl overflow-hidden shadow-sm border border-border bg-card"
+                className="break-inside-avoid relative group rounded-xl overflow-hidden shadow-sm border border-border bg-card cursor-pointer"
+                onClick={() =>
+                  setAction({ type: 'swipe', mode: 'edit', itemId: s.id })
+                }
               >
                 <div
                   className="absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -151,12 +169,11 @@ export default function SwipeFile() {
                     onMove={(id) => updateSwipeFolder(s.id, id)}
                   />
                 </div>
-                {s.isFavorite && (
-                  <Star
-                    className="absolute top-3 right-3 text-yellow-400 fill-yellow-400 drop-shadow-md z-10"
-                    size={20}
-                  />
-                )}
+                <Star
+                  className={`absolute top-3 right-3 drop-shadow-md z-10 transition-opacity ${s.isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-white/60 opacity-0 group-hover:opacity-100'}`}
+                  size={20}
+                  onClick={(e) => toggleFavorite(e, s.id)}
+                />
                 <img
                   src={s.imageUrl}
                   alt={s.title}
@@ -202,7 +219,13 @@ export default function SwipeFile() {
                 </TableRow>
               ))}
               {filteredSwipes.map((s) => (
-                <TableRow key={s.id}>
+                <TableRow
+                  key={s.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() =>
+                    setAction({ type: 'swipe', mode: 'edit', itemId: s.id })
+                  }
+                >
                   <TableCell className="w-16">
                     <img
                       src={s.imageUrl}
@@ -210,22 +233,38 @@ export default function SwipeFile() {
                       className="w-10 h-10 object-cover rounded border"
                     />
                   </TableCell>
-                  <TableCell className="font-medium flex items-center gap-2 py-4">
-                    {s.title}{' '}
-                    {s.isFavorite && (
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2 py-2">
+                      {s.title}{' '}
                       <Star
-                        className="text-yellow-400 fill-yellow-400"
+                        className={`transition-colors ${s.isFavorite ? 'text-yellow-400 fill-yellow-400' : 'text-slate-300'}`}
                         size={14}
+                        onClick={(e) => toggleFavorite(e, s.id)}
                       />
-                    )}
+                    </div>
                   </TableCell>
                   <TableCell>{s.category}</TableCell>
-                  <TableCell>
-                    <MoveDialog
-                      folders={moduleFolders}
-                      currentFolderId={s.folderId}
-                      onMove={(id) => updateSwipeFolder(s.id, id)}
-                    />
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() =>
+                          setAction({
+                            type: 'swipe',
+                            mode: 'edit',
+                            itemId: s.id,
+                          })
+                        }
+                      >
+                        <Pencil size={14} />
+                      </Button>
+                      <MoveDialog
+                        folders={moduleFolders}
+                        currentFolderId={s.folderId}
+                        onMove={(id) => updateSwipeFolder(s.id, id)}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
