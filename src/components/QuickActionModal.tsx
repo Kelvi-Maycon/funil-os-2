@@ -313,7 +313,7 @@ export default function QuickActionModal() {
               }
             >
               <SelectTrigger
-                className={!!state.defaultProjectId ? 'opacity-50' : ''}
+                className={state.defaultProjectId ? 'opacity-50' : ''}
               >
                 <SelectValue placeholder="Selecione um projeto" />
               </SelectTrigger>
