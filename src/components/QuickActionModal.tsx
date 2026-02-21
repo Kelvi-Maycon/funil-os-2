@@ -56,6 +56,9 @@ export default function QuickActionModal() {
         item = insights.find((i) => i.id === state.itemId)
       if (state.type === 'swipe')
         item = swipes.find((s) => s.id === state.itemId)
+      if (state.type === 'task') item = tasks.find((t) => t.id === state.itemId)
+      if (state.type === 'document')
+        item = docs.find((d) => d.id === state.itemId)
 
       if (item) {
         setFormData({ ...item, projectId: item.projectId || 'none' })
@@ -63,7 +66,7 @@ export default function QuickActionModal() {
     } else {
       setFormData({ projectId: state.defaultProjectId || 'none' })
     }
-  }, [state, funnels, assets, insights, swipes])
+  }, [state, funnels, assets, insights, swipes, tasks, docs])
 
   if (!state) return null
 
@@ -100,17 +103,17 @@ export default function QuickActionModal() {
           edges: [],
         }
         setFunnels([...funnels, newFunnel])
-        navigate(`/canvas/${id}`)
+        if (!state.defaultProjectId) navigate(`/canvas/${id}`)
       } else if (state.type === 'document') {
         const newDoc = {
           ...data,
           id,
           title: data.title || 'Novo Documento',
-          content: '',
+          content: data.content || '',
           updatedAt: new Date().toISOString(),
         }
         setDocs([...docs, newDoc])
-        navigate(`/documentos`)
+        if (!state.defaultProjectId) navigate(`/documentos`)
       } else if (state.type === 'asset') {
         setAssets([
           ...assets,
@@ -156,6 +159,10 @@ export default function QuickActionModal() {
         setInsights(insights.map((i) => (i.id === id ? { ...i, ...data } : i)))
       else if (state.type === 'swipe')
         setSwipes(swipes.map((s) => (s.id === id ? { ...s, ...data } : s)))
+      else if (state.type === 'task')
+        setTasks(tasks.map((t) => (t.id === id ? { ...t, ...data } : t)))
+      else if (state.type === 'document')
+        setDocs(docs.map((d) => (d.id === id ? { ...d, ...data } : d)))
       toast({ title: 'Atualizado com sucesso!' })
     }
 
@@ -205,6 +212,30 @@ export default function QuickActionModal() {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 autoFocus
+              />
+            </div>
+          )}
+
+          {['task'].includes(state.type) && (
+            <div className="space-y-1.5">
+              <Label>Descrição</Label>
+              <Textarea
+                value={formData.description || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+              />
+            </div>
+          )}
+
+          {['document'].includes(state.type) && (
+            <div className="space-y-1.5">
+              <Label>Conteúdo</Label>
+              <Textarea
+                value={formData.content || ''}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
               />
             </div>
           )}
@@ -273,14 +304,17 @@ export default function QuickActionModal() {
           )}
 
           <div className="space-y-1.5">
-            <Label>Projeto (Opcional)</Label>
+            <Label>Projeto</Label>
             <Select
+              disabled={!!state.defaultProjectId}
               value={formData.projectId || 'none'}
               onValueChange={(val) =>
                 setFormData({ ...formData, projectId: val })
               }
             >
-              <SelectTrigger>
+              <SelectTrigger
+                className={!!state.defaultProjectId ? 'opacity-50' : ''}
+              >
                 <SelectValue placeholder="Selecione um projeto" />
               </SelectTrigger>
               <SelectContent>
@@ -292,6 +326,11 @@ export default function QuickActionModal() {
                 ))}
               </SelectContent>
             </Select>
+            {!!state.defaultProjectId && (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Vinculado automaticamente ao projeto atual.
+              </p>
+            )}
           </div>
 
           <DialogFooter className="pt-2">
