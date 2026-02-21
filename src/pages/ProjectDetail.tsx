@@ -368,44 +368,13 @@ export default function ProjectDetail() {
 
           <TabsContent
             value="tasks"
-            className="h-full m-0 flex flex-col border-none outline-none max-w-7xl mx-auto w-full"
+            className="h-full m-0 flex flex-col border-none outline-none"
           >
-            <div className="flex justify-between items-center mb-6 shrink-0">
-              <h3 className="text-lg font-semibold text-slate-800">
-                Quadro de Tarefas
-              </h3>
-              <Button
-                onClick={() =>
-                  setAction({
-                    type: 'task',
-                    mode: 'create',
-                    defaultProjectId: id,
-                  })
-                }
-              >
-                <Plus size={16} className="mr-2" /> Nova Tarefa
-              </Button>
-            </div>
-            {projectTasks.length > 0 ? (
-              <div className="flex-1 overflow-hidden min-h-[600px] -mx-4 px-4 sm:mx-0 sm:px-0">
-                <TasksBoard
-                  tasks={projectTasks}
-                  updateTask={updateTask}
-                  onCardClick={setSelectedTask}
-                />
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
-                  <CheckSquare size={24} />
-                </div>
-                <h3 className="text-lg font-medium text-slate-900">
-                  Nenhuma tarefa
+            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+              <div className="flex justify-between items-center mb-6 shrink-0">
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Tarefas
                 </h3>
-                <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
-                  Organize as entregas do projeto criando tarefas para sua
-                  equipe.
-                </p>
                 <Button
                   onClick={() =>
                     setAction({
@@ -415,71 +384,54 @@ export default function ProjectDetail() {
                     })
                   }
                 >
-                  Criar primeira Tarefa
+                  <Plus size={16} className="mr-2" /> Nova Tarefa
                 </Button>
               </div>
-            )}
+              {projectTasks.length > 0 ? (
+                <div className="flex-1 overflow-hidden min-h-[600px] -mx-4 px-4 sm:mx-0 sm:px-0">
+                  <TasksBoard
+                    tasks={projectTasks}
+                    updateTask={updateTask}
+                    onCardClick={setSelectedTask}
+                  />
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                    <CheckSquare size={24} />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900">
+                    Nenhuma tarefa
+                  </h3>
+                  <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
+                    Organize as entregas do projeto criando tarefas para sua
+                    equipe.
+                  </p>
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'task',
+                        mode: 'create',
+                        defaultProjectId: id,
+                      })
+                    }
+                  >
+                    Criar primeira Tarefa
+                  </Button>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent
             value="documents"
-            className="h-full m-0 flex flex-col border-none outline-none max-w-7xl mx-auto w-full"
+            className="h-full m-0 flex flex-col border-none outline-none"
           >
-            <div className="flex justify-between items-center mb-6 shrink-0">
-              <h3 className="text-lg font-semibold text-slate-800">
-                Documentos
-              </h3>
-              <Button
-                onClick={() =>
-                  setAction({
-                    type: 'document',
-                    mode: 'create',
-                    defaultProjectId: id,
-                  })
-                }
-              >
-                <Plus size={16} className="mr-2" /> Novo Documento
-              </Button>
-            </div>
-            {projectDocs.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {projectDocs.map((d) => (
-                  <Card
-                    key={d.id}
-                    className="cursor-pointer hover:shadow-md transition-shadow group border-border hover:border-primary/40 flex flex-col rounded-xl"
-                    onClick={() => navigate('/documentos')}
-                  >
-                    <CardHeader className="p-5 pb-3 flex flex-row items-start justify-between space-y-0 shrink-0">
-                      <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-50 mb-2 group-hover:scale-110 transition-transform">
-                        <FileText size={20} className="text-blue-500" />
-                      </div>
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        {format(new Date(d.updatedAt), 'dd/MM/yyyy')}
-                      </span>
-                    </CardHeader>
-                    <CardContent className="p-5 pt-0 flex-1 flex flex-col">
-                      <CardTitle className="text-base font-semibold text-slate-800 line-clamp-1 mb-2">
-                        {d.title}
-                      </CardTitle>
-                      <p className="text-sm text-slate-500 line-clamp-2">
-                        {d.content.replace(/<[^>]*>?/gm, '') ||
-                          'Documento vazio'}
-                      </p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
-                  <FileText size={24} />
-                </div>
-                <h3 className="text-lg font-medium text-slate-900">
-                  Nenhum documento
+            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+              <div className="flex justify-between items-center mb-6 shrink-0">
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Documentos
                 </h3>
-                <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
-                  Crie briefings, roteiros e textos centralizados neste projeto.
-                </p>
                 <Button
                   onClick={() =>
                     setAction({
@@ -489,151 +441,75 @@ export default function ProjectDetail() {
                     })
                   }
                 >
-                  Criar Documento
+                  <Plus size={16} className="mr-2" /> Novo Documento
                 </Button>
               </div>
-            )}
+              {projectDocs.length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {projectDocs.map((d) => (
+                    <Card
+                      key={d.id}
+                      className="cursor-pointer hover:shadow-md transition-shadow group border-border hover:border-primary/40 flex flex-col rounded-xl"
+                      onClick={() => navigate('/documentos')}
+                    >
+                      <CardHeader className="p-5 pb-3 flex flex-row items-start justify-between space-y-0 shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-50 mb-2 group-hover:scale-110 transition-transform">
+                          <FileText size={20} className="text-blue-500" />
+                        </div>
+                        <span className="text-[11px] text-slate-400 font-medium">
+                          {format(new Date(d.updatedAt), 'dd/MM/yyyy')}
+                        </span>
+                      </CardHeader>
+                      <CardContent className="p-5 pt-0 flex-1 flex flex-col">
+                        <CardTitle className="text-base font-semibold text-slate-800 line-clamp-1 mb-2">
+                          {d.title}
+                        </CardTitle>
+                        <p className="text-sm text-slate-500 line-clamp-2">
+                          {d.content.replace(/<[^>]*>?/gm, '') ||
+                            'Documento vazio'}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                    <FileText size={24} />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900">
+                    Nenhum documento
+                  </h3>
+                  <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
+                    Crie briefings, roteiros e textos centralizados neste
+                    projeto.
+                  </p>
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'document',
+                        mode: 'create',
+                        defaultProjectId: id,
+                      })
+                    }
+                  >
+                    Criar Documento
+                  </Button>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent
             value="assets"
-            className="h-full m-0 flex flex-col border-none outline-none max-w-7xl mx-auto w-full"
+            className="h-full m-0 flex flex-col border-none outline-none"
           >
-            <div className="flex justify-between items-center mb-6 shrink-0">
-              <h3 className="text-lg font-semibold text-slate-800">
-                Assets & Swipe File
-              </h3>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    setAction({
-                      type: 'swipe',
-                      mode: 'create',
-                      defaultProjectId: id,
-                    })
-                  }
-                >
-                  <Bookmark size={16} className="mr-2" /> Salvar Inspiração
-                </Button>
-                <Button
-                  onClick={() =>
-                    setAction({
-                      type: 'asset',
-                      mode: 'create',
-                      defaultProjectId: id,
-                    })
-                  }
-                >
-                  <Plus size={16} className="mr-2" /> Adicionar Asset
-                </Button>
-              </div>
-            </div>
-            {projectAssets.length > 0 || projectSwipes.length > 0 ? (
-              <div className="space-y-8">
-                {projectAssets.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <ImageIcon size={16} /> Assets do Projeto
-                    </h4>
-                    <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                      {projectAssets.map((asset) => (
-                        <Card
-                          key={asset.id}
-                          className="overflow-hidden hover:shadow-md transition-all group border-border cursor-pointer rounded-xl"
-                          onClick={() =>
-                            setAction({
-                              type: 'asset',
-                              mode: 'edit',
-                              itemId: asset.id,
-                            })
-                          }
-                        >
-                          <div className="aspect-square bg-slate-100 relative">
-                            <img
-                              src={asset.url}
-                              alt={asset.name}
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="bg-white/90 hover:bg-white text-slate-900 pointer-events-none"
-                              >
-                                Editar
-                              </Button>
-                            </div>
-                          </div>
-                          <CardContent className="p-3 bg-white border-t border-border">
-                            <h3 className="font-medium text-sm truncate text-slate-800">
-                              {asset.name}
-                            </h3>
-                            <div className="flex gap-1 mt-1.5 flex-wrap">
-                              <Badge
-                                variant="secondary"
-                                className="text-[10px] px-1.5 py-0 font-normal"
-                              >
-                                {asset.category}
-                              </Badge>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {projectSwipes.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <Bookmark size={16} /> Swipe File
-                    </h4>
-                    <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                      {projectSwipes.map((s) => (
-                        <div
-                          key={s.id}
-                          className="relative group rounded-xl overflow-hidden shadow-sm border border-border bg-card cursor-pointer hover:shadow-md transition-all"
-                          onClick={() =>
-                            setAction({
-                              type: 'swipe',
-                              mode: 'edit',
-                              itemId: s.id,
-                            })
-                          }
-                        >
-                          <img
-                            src={s.imageUrl}
-                            alt={s.title}
-                            className="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end pointer-events-none">
-                            <h3 className="text-white font-medium text-sm line-clamp-1">
-                              {s.title}
-                            </h3>
-                            <p className="text-white/80 text-xs">
-                              {s.category}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
-                  <ImageIcon size={24} />
-                </div>
-                <h3 className="text-lg font-medium text-slate-900">
-                  Sem assets ou inspirações
+            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+              <div className="flex justify-between items-center mb-6 shrink-0">
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Assets & Swipe
                 </h3>
-                <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
-                  Faça upload de criativos, referências visuais e assets para
-                  usar no projeto.
-                </p>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
                     onClick={() =>
@@ -644,7 +520,7 @@ export default function ProjectDetail() {
                       })
                     }
                   >
-                    Salvar Inspiração
+                    <Bookmark size={16} className="mr-2" /> Salvar Inspiração
                   </Button>
                   <Button
                     onClick={() =>
@@ -655,91 +531,153 @@ export default function ProjectDetail() {
                       })
                     }
                   >
-                    Adicionar Asset
+                    <Plus size={16} className="mr-2" /> Novo Asset
                   </Button>
                 </div>
               </div>
-            )}
+              {projectAssets.length > 0 || projectSwipes.length > 0 ? (
+                <div className="space-y-8">
+                  {projectAssets.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <ImageIcon size={16} /> Assets do Projeto
+                      </h4>
+                      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {projectAssets.map((asset) => (
+                          <Card
+                            key={asset.id}
+                            className="overflow-hidden hover:shadow-md transition-all group border-border cursor-pointer rounded-xl"
+                            onClick={() =>
+                              setAction({
+                                type: 'asset',
+                                mode: 'edit',
+                                itemId: asset.id,
+                              })
+                            }
+                          >
+                            <div className="aspect-square bg-slate-100 relative">
+                              <img
+                                src={asset.url}
+                                alt={asset.name}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              />
+                              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="bg-white/90 hover:bg-white text-slate-900 pointer-events-none"
+                                >
+                                  Editar
+                                </Button>
+                              </div>
+                            </div>
+                            <CardContent className="p-3 bg-white border-t border-border">
+                              <h3 className="font-medium text-sm truncate text-slate-800">
+                                {asset.name}
+                              </h3>
+                              <div className="flex gap-1 mt-1.5 flex-wrap">
+                                <Badge
+                                  variant="secondary"
+                                  className="text-[10px] px-1.5 py-0 font-normal"
+                                >
+                                  {asset.category}
+                                </Badge>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {projectSwipes.length > 0 && (
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+                        <Bookmark size={16} /> Swipe File
+                      </h4>
+                      <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        {projectSwipes.map((s) => (
+                          <div
+                            key={s.id}
+                            className="relative group rounded-xl overflow-hidden shadow-sm border border-border bg-card cursor-pointer hover:shadow-md transition-all"
+                            onClick={() =>
+                              setAction({
+                                type: 'swipe',
+                                mode: 'edit',
+                                itemId: s.id,
+                              })
+                            }
+                          >
+                            <img
+                              src={s.imageUrl}
+                              alt={s.title}
+                              className="w-full aspect-[3/4] object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-4 flex flex-col justify-end pointer-events-none">
+                              <h3 className="text-white font-medium text-sm line-clamp-1">
+                                {s.title}
+                              </h3>
+                              <p className="text-white/80 text-xs">
+                                {s.category}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                    <ImageIcon size={24} />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900">
+                    Sem assets ou inspirações
+                  </h3>
+                  <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
+                    Faça upload de criativos, referências visuais e assets para
+                    usar no projeto.
+                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() =>
+                        setAction({
+                          type: 'swipe',
+                          mode: 'create',
+                          defaultProjectId: id,
+                        })
+                      }
+                    >
+                      Salvar Inspiração
+                    </Button>
+                    <Button
+                      onClick={() =>
+                        setAction({
+                          type: 'asset',
+                          mode: 'create',
+                          defaultProjectId: id,
+                        })
+                      }
+                    >
+                      Novo Asset
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent
             value="insights"
-            className="h-full m-0 flex flex-col border-none outline-none max-w-7xl mx-auto w-full"
+            className="h-full m-0 flex flex-col border-none outline-none"
           >
-            <div className="flex justify-between items-center mb-6 shrink-0">
-              <h3 className="text-lg font-semibold text-slate-800">
-                Insights do Projeto
-              </h3>
-              <Button
-                onClick={() =>
-                  setAction({
-                    type: 'insight',
-                    mode: 'create',
-                    defaultProjectId: id,
-                  })
-                }
-              >
-                <Plus size={16} className="mr-2" /> Novo Insight
-              </Button>
-            </div>
-            {projectInsights.length > 0 ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {projectInsights.map((i) => (
-                  <Card
-                    key={i.id}
-                    className="relative hover:shadow-md transition-shadow group border-border hover:border-primary/40 flex flex-col cursor-pointer rounded-xl"
-                    onClick={() =>
-                      setAction({
-                        type: 'insight',
-                        mode: 'edit',
-                        itemId: i.id,
-                      })
-                    }
-                  >
-                    <CardHeader className="pb-2 shrink-0">
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge
-                          variant="secondary"
-                          className="bg-primary/10 text-primary border-none"
-                        >
-                          {i.type}
-                        </Badge>
-                        <span className="text-[10px] text-slate-400 font-medium">
-                          {format(new Date(i.createdAt), 'dd/MM/yyyy')}
-                        </span>
-                      </div>
-                      <CardTitle className="text-base leading-snug">
-                        {i.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-1 flex flex-col">
-                      <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed flex-1">
-                        {i.content}
-                      </p>
-                      <div className="mt-4 pt-4 border-t border-border flex justify-end">
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] font-normal text-slate-500"
-                        >
-                          {i.status}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
-                  <Lightbulb size={24} />
-                </div>
-                <h3 className="text-lg font-medium text-slate-900">
-                  Nenhum insight documentado
+            <div className="flex flex-col h-full max-w-7xl mx-auto w-full">
+              <div className="flex justify-between items-center mb-6 shrink-0">
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Insights
                 </h3>
-                <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
-                  Registre ideias, hipóteses de teste e aprendizados sobre este
-                  projeto.
-                </p>
                 <Button
                   onClick={() =>
                     setAction({
@@ -749,10 +687,81 @@ export default function ProjectDetail() {
                     })
                   }
                 >
-                  Registrar Insight
+                  <Plus size={16} className="mr-2" /> Novo Insight
                 </Button>
               </div>
-            )}
+              {projectInsights.length > 0 ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {projectInsights.map((i) => (
+                    <Card
+                      key={i.id}
+                      className="relative hover:shadow-md transition-shadow group border-border hover:border-primary/40 flex flex-col cursor-pointer rounded-xl"
+                      onClick={() =>
+                        setAction({
+                          type: 'insight',
+                          mode: 'edit',
+                          itemId: i.id,
+                        })
+                      }
+                    >
+                      <CardHeader className="pb-2 shrink-0">
+                        <div className="flex justify-between items-start mb-2">
+                          <Badge
+                            variant="secondary"
+                            className="bg-primary/10 text-primary border-none"
+                          >
+                            {i.type}
+                          </Badge>
+                          <span className="text-[10px] text-slate-400 font-medium">
+                            {format(new Date(i.createdAt), 'dd/MM/yyyy')}
+                          </span>
+                        </div>
+                        <CardTitle className="text-base leading-snug">
+                          {i.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex-1 flex flex-col">
+                        <p className="text-muted-foreground text-sm line-clamp-3 leading-relaxed flex-1">
+                          {i.content}
+                        </p>
+                        <div className="mt-4 pt-4 border-t border-border flex justify-end">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-normal text-slate-500"
+                          >
+                            {i.status}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl bg-white p-12 min-h-[400px]">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 text-primary">
+                    <Lightbulb size={24} />
+                  </div>
+                  <h3 className="text-lg font-medium text-slate-900">
+                    Nenhum insight documentado
+                  </h3>
+                  <p className="text-slate-500 mt-1 mb-6 text-center max-w-sm">
+                    Registre ideias, hipóteses de teste e aprendizados sobre
+                    este projeto.
+                  </p>
+                  <Button
+                    onClick={() =>
+                      setAction({
+                        type: 'insight',
+                        mode: 'create',
+                        defaultProjectId: id,
+                      })
+                    }
+                  >
+                    Registrar Insight
+                  </Button>
+                </div>
+              )}
+            </div>
           </TabsContent>
         </div>
       </Tabs>
